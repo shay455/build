@@ -1,0 +1,13 @@
+# Local Postgres for running the API against a real database instead of the embedded PGlite.
+# Usage: docker compose up -d && export DATABASE_URL=postgres://bombot:bombot@localhost:5432/bombot
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bombot
+      POSTGRES_PASSWORD: bombot
+      POSTGRES_DB: bombot
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+volumes:
+  pgdata:

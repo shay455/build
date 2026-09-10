@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.next/
+out/
+data/
+*.tsbuildinfo
+.env
+.env.local
+.DS_Store
+coverage/
+evals/last-run.json
