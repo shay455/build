@@ -1,4 +1,4 @@
-<title>איפיון בוט בסגנון Grok</title>
+<title>איפיון Bombot</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root{
@@ -97,14 +97,16 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
 <div class="wrap">
 <main>
 <header>
-  <div class="eyebrow">PRODUCT &amp; TECHNICAL SPEC · v1.0 · 2026-09-10</div>
-  <h1>איפיון בוט בסגנון Grok</h1>
-  <p class="lede">מסמך איפיון מוצרי וטכני לבניית עוזר AI שיחתי עם חיפוש בזמן אמת, בוט תגובות במנשן ברשת חברתית, מצבי חשיבה ומחקר עמוק, זיכרון, ובשלב מתקדם סוכנים אוטונומיים "תמיד דלוקים". מבוסס על מחקר רשת של מוצרי Grok של xAI נכון לספטמבר 2026.</p>
+  <div class="eyebrow">PRODUCT &amp; TECHNICAL SPEC · v1.1 · 2026-09-10</div>
+  <h1>Bombot</h1>
+  <p class="lede">איפיון מוצרי וטכני ל-Bombot, מותג עצמאי: עוזר AI שיחתי עם חיפוש בזמן אמת, בוט תגובות במנשן ברשת חברתית, מצבי חשיבה ומחקר עמוק, זיכרון, ובשלב מתקדם סוכנים אוטונומיים "תמיד דלוקים". מבוסס על מחקר רשת של מוצרי Grok של xAI נכון לספטמבר 2026.</p>
   <div class="meta">
-    <span>סטטוס: <b>טיוטה לאישור</b></span>
+    <span>סטטוס: <b>v1.1 אחרי הכרעות מוצר</b></span>
+    <span>מותג: <b>Bombot, עצמאי</b></span>
     <span>קהל: <b>מוצר, הנדסה, DevOps, משפטי</b></span>
     <span>מנוע LLM מומלץ: <b>Claude Opus 5</b></span>
     <span>שפות ממשק: <b>עברית, אנגלית, ערבית</b></span>
+    <span>ערוץ ראשון: <b>טלגרם</b></span>
   </div>
 </header>
 
@@ -112,11 +114,11 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
 <section id="s1">
   <div class="sec-head"><span class="num">01</span><h2>תקציר מנהלים</h2></div>
   <p>Grok הוא לא מוצר אחד אלא משפחה של שלוש חוויות שחולקות מנוע אחד: <b>צ'אטבוט</b> עם גישה לחדשות ולפוסטים בזמן אמת, <b>בוט תגובות ציבורי</b> שמשיב כשמתייגים אותו בשרשור (‎@grok), ומאז אוגוסט 2026 גם <b>Grok Bot</b>, סוכנים מתמידים שמקבלים משימה, מחשב ענן וגישה לחשבונות, וממשיכים לעבוד אחרי שסגרת את המחשב.</p>
-  <p>המסמך מציע לבנות מוצר מקביל בשלושה שלבים, כשכל שלב עומד בפני עצמו ומייצר ערך. הבידול המרכזי של Grok הוא גישה בלעדית לנתוני X. למוצר שלנו אין נתון כזה, ולכן הבידול המוצע הוא <b>אמינות</b>: כל טענה עובדתית מגובה בציטוט, מנגנוני בטיחות מובנים בארכיטקטורה ולא בפרומפט בלבד, ותמיכה מלאה בעברית ובשפות RTL.</p>
+  <p>המסמך מגדיר את Bombot, מוצר מקביל שנבנה בשלושה שלבים, כשכל שלב עומד בפני עצמו ומייצר ערך. הבידול המרכזי של Grok הוא גישה בלעדית לנתוני X. למוצר שלנו אין נתון כזה, ולכן הבידול המוצע הוא <b>אמינות</b>: כל טענה עובדתית מגובה בציטוט, מנגנוני בטיחות מובנים בארכיטקטורה ולא בפרומפט בלבד, ותמיכה מלאה בעברית ובשפות RTL.</p>
   <div class="grid">
     <div class="tile"><h4>שלב א · צ'אט + חיפוש חי</h4><p>אפליקציית צ'אט, חיפוש רשת בזמן אמת, ציטוטים, קבצים ותמונות, מצב Think.</p></div>
-    <div class="tile"><h4>שלב ב · בוט מנשן + מחקר עמוק</h4><p>תגובה אוטומטית כשמתייגים את הבוט בטלגרם, ב-X או בדיסקורד. DeepSearch, זיכרון, סביבות עבודה, משימות מתוזמנות.</p></div>
-    <div class="tile"><h4>שלב ג · סוכנים תמיד דלוקים</h4><p>סוכנים בעלי שם ותפקיד, מחשב ענן, חיבורים ל-Gmail, Slack, GitHub, קבוצות סוכנים, שערי אישור אנושי.</p></div>
+    <div class="tile"><h4>שלב ב · בוט מנשן + מחקר עמוק</h4><p>תגובה אוטומטית כשמתייגים את ‎@bombot בקבוצות טלגרם. DeepSearch, זיכרון, סביבות עבודה, משימות מתוזמנות, יצירת תמונות על שירות חינמי קיים.</p></div>
+    <div class="tile"><h4>שלב ג · סוכנים תמיד דלוקים</h4><p>סוכנים בעלי שם ותפקיד, מחשב ענן, חיבורים ל-Gmail, Slack, GitHub, קבוצות סוכנים, שערי אישור אנושי. הרחבת בוט המנשן ל-X ולדיסקורד.</p></div>
   </div>
 </section>
 
@@ -203,7 +205,7 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
 <section id="s4">
   <div class="sec-head"><span class="num">04</span><h2>פרסונות ותרחישי שימוש</h2></div>
   <div class="grid">
-    <div class="tile"><h4>נועה, עיתונאית דיגיטל</h4><p>רואה סרטון ויראלי, מתייגת את הבוט: "זה אמיתי?" רוצה תשובה קצרה עם שלושה מקורות תוך דקה.</p></div>
+    <div class="tile"><h4>נועה, עיתונאית דיגיטל</h4><p>רואה סרטון ויראלי בקבוצת טלגרם של 4,000 חברים, מתייגת ‎@bombot: "זה אמיתי?" רוצה תשובה קצרה עם שלושה מקורות תוך דקה.</p></div>
     <div class="tile"><h4>אלון, מנהל מוצר</h4><p>מריץ DeepSearch על מתחרים פעם בשבוע, שומר בסביבת עבודה עם קבצי המוצר, ומקבל דוח מתוזמן כל יום ראשון.</p></div>
     <div class="tile"><h4>מאיה, בעלת עסק קטן</h4><p>מקימה סוכן "שירות לקוחות" שקורא את תיבת המייל, מנסח תשובות, ומבקש אישור לפני שליחה.</p></div>
     <div class="tile"><h4>דני, מפתח</h4><p>מחבר סוכן ל-GitHub ול-Slack, נותן לו לעקוב אחרי issues, לפתוח PR לטיוטה, ולדווח בערוץ.</p></div>
@@ -211,7 +213,7 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
   <h4>תרחישי ליבה</h4>
   <ol>
     <li><b>שאלה על אירוע נוכחי.</b> המשתמש שואל "מה קרה הבוקר בבורסה". המערכת מזהה צורך בחיפוש, מריצה חיפוש רשת, עונה בהזרמה עם ציטוטים ממוספרים.</li>
-    <li><b>אימות פוסט.</b> מנשן בשרשור. המערכת שולפת את הפוסט ההורה, המדיה והשרשור, מריצה חיפוש מרובה מקורות, מדרגת (נכון / מטעה / לא ניתן לאמת / שגוי) ומגיבה עד 550 תווים עם קישור.</li>
+    <li><b>אימות פוסט.</b> מנשן בתגובה בקבוצת טלגרם. המערכת שולפת את ההודעה שעליה הגיבו, המדיה והשרשור, מריצה חיפוש מרובה מקורות, מדרגת (נכון / מטעה / לא ניתן לאמת / שגוי) ומגיבה עד 550 תווים עם קישור.</li>
     <li><b>מחקר עמוק.</b> "הכן לי סקירה על תקנות AI באיחוד האירופי". תכנון תת שאלות, 8 עד 12 חיפושים, טיוטה, ביקורת עצמית, דוח עם מקורות. זמן יעד: 2 עד 4 דקות.</li>
     <li><b>משימה מתמשכת.</b> "עקוב אחרי המתחרה X ועדכן אותי כשיוצא מוצר חדש". סוכן מתוזמן שרץ פעם ביום ומודיע רק כשיש שינוי.</li>
   </ol>
@@ -255,15 +257,17 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
   <div class="tbl"><table>
     <thead><tr><th>מזהה</th><th>דרישה</th><th>עדיפות</th><th>שלב</th></tr></thead>
     <tbody>
-      <tr><td class="id">MENT-01</td><td>קליטת אירועי מנשן דרך webhook מטלגרם (בוט בקבוצות), X (Account Activity API), דיסקורד ו-Slack. ממשק מתאם אחיד לכל פלטפורמה</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
-      <tr><td class="id">MENT-02</td><td>בניית הקשר: הפוסט ההורה, עד 20 הודעות בשרשור, מדיה מצורפת (תמונה, וידאו עם פריימים מדוגמים), ופרופיל ציבורי של המחבר</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">MENT-01</td><td><b>טלגרם ראשון:</b> בוט בקבוצות ובערוצים דרך Bot API עם webhook, מגיב למנשן ‎@bombot, לפקודה ‎/check ולתגובה על הודעה. ממשק מתאם אחיד שמאפשר הוספת פלטפורמות בלי לגעת במתזמר</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">MENT-01b</td><td>מתאמים ל-X (Account Activity API, מסלול בתשלום) ולדיסקורד, רק אחרי שטלגרם מגיע ל-10 אלף מנשנים בשבוע</td><td><span class="pill could">Could</span></td><td>ג</td></tr>
+      <tr><td class="id">MENT-02</td><td>בניית הקשר: ההודעה שעליה הגיבו, עד 20 הודעות קודמות בשרשור או בטופיק, מדיה מצורפת (תמונה, וידאו עם פריימים מדוגמים, קישורים מקדימים), ושם התצוגה הציבורי של השולח</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
       <tr><td class="id">MENT-03</td><td>סיווג כוונה: אימות עובדה, הסבר, תרגום, סיכום, שיחה חופשית, ספאם. לספאם ולניסיונות הזרקה אין תגובה</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
       <tr><td class="id">MENT-04</td><td>אימות עובדות עם פסק דין מפורש (נכון / חלקית / מטעה / שגוי / לא ניתן לאמת), רמת ביטחון, ומקור אחד לפחות בקישור</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
-      <tr><td class="id">MENT-05</td><td>אורך תגובה לפי פלטפורמה: X עד 550 תווים, טלגרם עד 1,200, ללא Markdown היכן שלא נתמך, ללא תיוג משתמשים אחרים</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">MENT-05</td><td>אורך תגובה לפי פלטפורמה: טלגרם עד 1,200 תווים עם MarkdownV2 מוגבל (מודגש וקישורים בלבד), X עד 550 תווים ללא Markdown. ללא תיוג משתמשים אחרים</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
       <tr><td class="id">MENT-06</td><td>הגבלת קצב: 5 תגובות למשתמש לשעה בחינם, 30 למנויים. תור עם עדיפות למנויים</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
       <tr><td class="id">MENT-07</td><td>מסנן בטיחות כפול (לפני ואחרי היצירה) לתוכן ציבורי: שנאה, הסתה, זיהוי אנשים פרטיים, מידע רפואי או משפטי מסוכן. כישלון מסנן מוביל לתגובה גנרית או לשתיקה, אף פעם לא לפרסום</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
-      <tr><td class="id">MENT-08</td><td>כפתור "הסבר את הפוסט" בהרחבת דפדפן, מקביל ל-Grok Explain: 3 עד 5 נקודות הקשר עם מקורות</td><td><span class="pill could">Could</span></td><td>ב</td></tr>
+      <tr><td class="id">MENT-08</td><td>פקודת ‎/explain בטלגרם וכפתור inline "הסבר", מקבילים ל-Grok Explain: 3 עד 5 נקודות הקשר עם מקורות</td><td><span class="pill could">Could</span></td><td>ב</td></tr>
       <tr><td class="id">MENT-09</td><td>לוח בקרה למפעילי הבוט: תגובות אחרונות, דגלים, אפשרות מחיקה תוך דקה, מתג כיבוי חירום גלובלי</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">MENT-10</td><td>מנהלי קבוצה בטלגרם יכולים להגדיר: האם הבוט עונה רק למנשן או גם לפקודות, שפת ברירת מחדל, ורשימת נושאים חסומים לקבוצה</td><td><span class="pill should">Should</span></td><td>ב</td></tr>
     </tbody>
   </table></div>
 
@@ -290,7 +294,22 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
     </tbody>
   </table></div>
 
-  <h3>5.6 סוכנים תמיד דלוקים (המקבילה ל-Grok Bot)</h3>
+  <h3>5.6 יצירת תמונות (על שירות חינמי קיים)</h3>
+  <p>ההחלטה: כן ליצירת תמונות, בלי לאמן או לארח מודל, ובלי עלות שוטפת. הבחירה היא <b>Cloudflare Workers AI</b> עם המודל הפתוח FLUX.1 schnell (רישיון Apache 2.0), שמגיע עם מכסה יומית חינמית קבועה. גיבוי ללא מפתח API: Pollinations. שדרוג לשירות בתשלום נעשה רק אם המכסה החינמית נגמרת באופן קבוע.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>מזהה</th><th>דרישה</th><th>עדיפות</th><th>שלב</th></tr></thead>
+    <tbody>
+      <tr><td class="id">IMG-01</td><td>יצירת תמונה מטקסט בצ'אט ובטלגרם (פקודת ‎/imagine) דרך Cloudflare Workers AI, מודל FLUX.1 schnell, מאחורי ממשק ספק אחיד שמאפשר החלפה</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">IMG-02</td><td>גיבוי אוטומטי ל-Pollinations כשהמכסה היומית של Cloudflare נגמרת, עם הודעה למשתמש שהאיכות עשויה להיות נמוכה יותר</td><td><span class="pill should">Should</span></td><td>ב</td></tr>
+      <tr><td class="id">IMG-03</td><td>המודל הראשי משכתב את הפרומפט לאנגלית ומשפר אותו לפני השליחה, כי מודלי תמונה פתוחים חלשים בעברית</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">IMG-04</td><td>מדיניות אפס לאנשים אמיתיים: מסנן פרומפט ב-Haiku חוסם שמות של אנשים, תיאורי אישי ציבור ובקשות לתוכן מיני או אלים. אין תמונה-לתמונה עם פנים בשלב זה</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">IMG-05</td><td>סימון תמונות: סימן מים קטן "Bombot AI" ומטא-נתונים של מקור (C2PA כשנתמך)</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">IMG-06</td><td>מכסות: חינם 10 תמונות ביום, Plus 60, Pro 200. תור עם עדיפות למנויים כשמתקרבים למכסה של Cloudflare</td><td><span class="pill must">Must</span></td><td>ב</td></tr>
+      <tr><td class="id">IMG-07</td><td>יצירת וידאו</td><td><span class="pill wont">Won't</span></td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>5.7 סוכנים תמיד דלוקים (המקבילה ל-Grok Bot)</h3>
   <div class="tbl"><table>
     <thead><tr><th>מזהה</th><th>דרישה</th><th>עדיפות</th><th>שלב</th></tr></thead>
     <tbody>
@@ -328,8 +347,8 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
       <!-- channels row -->
       <text x="900" y="28" class="ts" text-anchor="end">CHANNELS</text>
       <rect x="760" y="40" width="160" height="46" rx="4" class="bx"/><text x="840" y="68" class="tx" text-anchor="middle">אפליקציית צ'אט (Web/iOS)</text>
-      <rect x="580" y="40" width="160" height="46" rx="4" class="bx"/><text x="660" y="68" class="tx" text-anchor="middle">בוט מנשן: X / טלגרם</text>
-      <rect x="400" y="40" width="160" height="46" rx="4" class="bx"/><text x="480" y="68" class="tx" text-anchor="middle">Slack / דיסקורד</text>
+      <rect x="580" y="40" width="160" height="46" rx="4" class="bx"/><text x="660" y="68" class="tx" text-anchor="middle">בוט טלגרם (מנשן, פקודות)</text>
+      <rect x="400" y="40" width="160" height="46" rx="4" class="bx"/><text x="480" y="68" class="tx" text-anchor="middle">X / דיסקורד (שלב ג)</text>
       <rect x="220" y="40" width="160" height="46" rx="4" class="bx"/><text x="300" y="68" class="tx" text-anchor="middle">API ציבורי</text>
       <!-- gateway -->
       <rect x="220" y="130" width="700" height="52" rx="4" class="bx2"/>
@@ -350,10 +369,10 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
       <text x="760" y="466" class="ts" text-anchor="middle">fallbacks: default · structured outputs</text>
       <rect x="400" y="360" width="180" height="120" rx="4" class="bx"/>
       <text x="490" y="384" class="tx" text-anchor="middle">כלי לקוח שלנו</text>
-      <text x="490" y="406" class="ts" text-anchor="middle">social_search (X, TG)</text>
+      <text x="490" y="406" class="ts" text-anchor="middle">social_search (TG, later X)</text>
       <text x="490" y="426" class="ts" text-anchor="middle">get_thread_context</text>
       <text x="490" y="446" class="ts" text-anchor="middle">memory_read / write</text>
-      <text x="490" y="466" class="ts" text-anchor="middle">schedule_task</text>
+      <text x="490" y="466" class="ts" text-anchor="middle">schedule_task · generate_image (CF)</text>
       <rect x="220" y="360" width="160" height="120" rx="4" class="bx"/>
       <text x="300" y="384" class="tx" text-anchor="middle">אחסון</text>
       <text x="300" y="406" class="ts" text-anchor="middle">Postgres (users, convos)</text>
@@ -401,15 +420,16 @@ figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
       <tr><td>Backend</td><td>TypeScript על Node 22, Fastify, SDK רשמי <code>@anthropic-ai/sdk</code></td><td>שפה אחת לכל המחסנית, tool runner מובנה ב-SDK</td></tr>
       <tr><td>תורים ומשימות</td><td>BullMQ על Redis, cron מנוהל</td><td>תור לבוט המנשן עם עדיפויות, משימות מתוזמנות</td></tr>
       <tr><td>נתונים</td><td>Postgres 16 + pgvector, S3 תואם</td><td>זיכרון סמנטי, קבצים, דוחות</td></tr>
+      <tr><td>יצירת תמונות</td><td>Cloudflare Workers AI (FLUX.1 schnell), גיבוי Pollinations</td><td>חינמי במכסה יומית, ללא תחזוקת GPU, החלפה קלה דרך ממשק ספק</td></tr>
       <tr><td>סודות</td><td>HashiCorp Vault או כספת של Managed Agents</td><td>סודות לעולם לא בתוך הפרומפט או הסנדבוקס</td></tr>
       <tr><td>תצפיתיות</td><td>OpenTelemetry, Grafana, Sentry, יומן ביקורת ב-ClickHouse</td><td>מעקב עלות לטוקן ולכלי, שחזור כל תשובה</td></tr>
-      <tr><td>פריסה</td><td>Kubernetes או Fly.io, אזורים EU ו-US</td><td>תושבות נתונים, שרידות</td></tr>
+      <tr><td>פריסה</td><td>Fly.io או Kubernetes, אזור אחד: EU (פרנקפורט)</td><td>ראו החלטה 3 בפרק 12: אזור אחד מפשט GDPR, ולישראל יש הכרה באיחוד האירופי. הרחבה ל-US רק לפי ביקוש</td></tr>
     </tbody>
   </table></div>
 
-  <h3>6.3 זרימת בוט המנשן צעד אחר צעד</h3>
+  <h3>6.3 זרימת בוט המנשן בטלגרם צעד אחר צעד</h3>
   <ol>
-    <li>webhook מהפלטפורמה נכנס לשער, מאומת בחתימה, נכנס לתור עם מזהה אידמפוטנטי. כפילויות נזרקות.</li>
+    <li>webhook מ-Telegram Bot API נכנס לשער, מאומת בסוד ה-webhook, נכנס לתור עם מזהה אידמפוטנטי. כפילויות נזרקות.</li>
     <li>עובד מושך את המשימה, בונה הקשר: פוסט הורה, שרשור, מדיה, מחבר. מסנן קלט ב-Haiku מסווג כוונה ומסנן ספאם והזרקות.</li>
     <li>קריאה ראשית ל-Opus עם כלי שרת web_search ו-web_fetch וכלי לקוח social_search, בפלט מובנה: <code>{verdict, confidence, text, sources[]}</code>.</li>
     <li>מסנן פלט: בדיקת מדיניות תוכן, בדיקה שכל מקור באמת מופיע בתוצאות החיפוש (מניעת המצאת קישורים), חיתוך לאורך הפלטפורמה.</li>
@@ -421,8 +441,8 @@ const tools = [
   { type: "web_search_20260209", name: "web_search",
     max_uses: 6, blocked_domains: ["bet365.com", "pornhub.com"] },
   { type: "web_fetch_20260209", name: "web_fetch", max_uses: 4, citations: { enabled: true } },
-  socialSearchTool,        // our client tool: X / Telegram public search, cached
-  getThreadContextTool,    // our client tool: parent post + thread + media
+  socialSearchTool,        // our client tool: Telegram public search (X later), cached
+  getThreadContextTool,    // our client tool: replied-to message + thread + media
 ];
 
 const runner = client.beta.messages.toolRunner({
@@ -466,7 +486,7 @@ const final = await runner;   // → { verdict, confidence, text, sources[] }</c
     <tbody>
       <tr><td>תוכן שנאה בערוץ ציבורי</td><td>16 שעות של פוסטים אנטישמיים אחרי שינוי פרומפט</td><td>מסנן פלט עצמאי, מתג כיבוי חירום, בדיקות רגרסיה חובה, רול-אאוט הדרגתי</td></tr>
       <tr><td>אימות עובדות שגוי</td><td>54.5% הסכמה עם בודקים; זיהוי סרטון ישן כאירוע חדש</td><td>שלושה מקורות מינימום, פסק דין עם רמת ביטחון, "לא ניתן לאמת" כתשובה לגיטימית, בדיקת תאריכי מדיה (reverse image search)</td></tr>
-      <tr><td>דיפ פייק ותמונות של אנשים אמיתיים</td><td>יצירת תמונות מיניות של אנשים אמיתיים</td><td>אין יצירת תמונות בשלבים א וב; בשלב ג רק עם מסנן פנים ומדיניות אפס לאנשים אמיתיים</td></tr>
+      <tr><td>דיפ פייק ותמונות של אנשים אמיתיים</td><td>יצירת תמונות מיניות של אנשים אמיתיים</td><td>יצירת תמונות רק מטקסט, מסנן פרומפט שחוסם שמות ואישי ציבור, אין תמונה-לתמונה עם פנים, סימן מים ומטא-נתוני מקור על כל תמונה (IMG-04, IMG-05)</td></tr>
       <tr><td>הזרקת פרומפט מתוכן שנשלף</td><td>הבוט "נדבק" מתוכן קיצוני בפוסטים</td><td>תוכן חיצוני נעטף כנתונים, הוראות מפעיל בערוץ system נפרד, מסנן קלט</td></tr>
       <tr><td>דליפת סודות מסוכנים</td><td>Grok Bot: מחשב משותף, "בוטים אינם גבול אבטחה"</td><td>קונטיינר לכל סוכן, סודות בכספת מוזרקים ביציאה, הרשאות מינימום לכל חיבור</td></tr>
       <tr><td>פרטיות וזיכרון</td><td>זיכרון שקוף עם מחיקה</td><td>אותו דבר, ובנוסף: זיכרון לעולם לא נטען לערוץ ציבורי, מחיקה תוך 24 שעות מכל העותקים</td></tr>
@@ -476,8 +496,8 @@ const final = await runner;   // → { verdict, confidence, text, sources[] }</c
   <ul>
     <li><b>GDPR ו-EU AI Act:</b> שקיפות שהמשתמש מדבר עם AI, זכות מחיקה, תיעוד סיכונים למערכת בסיכון מוגבל. בוט ציבורי שמאמת עובדות עשוי להיחשב מערכת בעלת השפעה על שיח ציבורי, ולכן דורש הערכת השפעה מתועדת.</li>
     <li><b>חוק הגנת הפרטיות (ישראל), תיקון 13:</b> רישום מאגר, ממונה פרטיות, הודעה על אירועים.</li>
-    <li><b>תנאי שימוש של פלטפורמות:</b> X API דורש מסלול בתשלום ואוסר פעולות אוטומטיות מסוימות; טלגרם ודיסקורד מתירים בוטים עם תיוג ברור.</li>
-    <li><b>שמירת נתונים אצל ספק המודל:</b> Opus 5 זמין תחת מדיניות שמירה סטנדרטית; יש לתעד זאת במדיניות הפרטיות.</li>
+    <li><b>תנאי שימוש של פלטפורמות:</b> טלגרם מתירה בוטים בחינם עם תיוג ברור וללא ספאם; X API דורש מסלול בתשלום ואוסר פעולות אוטומטיות מסוימות, ולכן נדחה לשלב ג.</li>
+    <li><b>שמירת נתונים אצל ספקים:</b> Opus 5 זמין תחת מדיניות שמירה סטנדרטית של Anthropic, ופרומפטים של תמונות עוברים ל-Cloudflare. שני הדברים מתועדים במדיניות הפרטיות של Bombot.</li>
   </ul>
 </section>
 
@@ -512,7 +532,7 @@ const final = await runner;   // → { verdict, confidence, text, sources[] }</c
       <tr><td>Team</td><td class="num">₪199 למושב</td><td class="num">8,000 למושב</td><td>עד 20 סוכנים, קבוצות סוכנים, SSO, יומן ביקורת ארגוני</td></tr>
     </tbody>
   </table></div>
-  <p>עלות יחידות לדוגמה: הודעת צ'אט 1, תשובה עם חיפוש 3, אימות מנשן 4, DeepSearch 40, שעת סוכן 60. חריגה מהמכסה: חיוב לפי שימוש או המתנה לאיפוס, לבחירת המשתמש.</p>
+  <p>עלות יחידות לדוגמה: הודעת צ'אט 1, תשובה עם חיפוש 3, אימות מנשן 4, תמונה 2, DeepSearch 40, שעת סוכן 60. חריגה מהמכסה: חיוב לפי שימוש או המתנה לאיפוס, לבחירת המשתמש.</p>
 </section>
 
 <!-- 11 -->
@@ -522,9 +542,9 @@ const final = await runner;   // → { verdict, confidence, text, sources[] }</c
     <div class="phase"><div class="ph">שלב א · שבועות 1–10</div><h4>צ'אט עם חיפוש חי</h4>
       <ul><li>שער, מתזמר, אפליקציית ווב</li><li>חיפוש רשת וציטוטים</li><li>קבצים ותמונות</li><li>מצב Think ובורר מאמץ</li><li>מסנני בטיחות, טלמטריה, eval ראשוני</li><li>בטא פתוחה ל-500 משתמשים</li></ul></div>
     <div class="phase"><div class="ph">שלב ב · שבועות 11–22</div><h4>בוט מנשן ומחקר עמוק</h4>
-      <ul><li>מתאם טלגרם, אחר כך X ודיסקורד</li><li>אימות עובדות מובנה, לוח בקרה, מתג חירום</li><li>DeepSearch עם התקדמות חיה</li><li>זיכרון, סביבות עבודה, משימות מתוזמנות</li><li>תשלומים ומכסות שבועיות</li></ul></div>
+      <ul><li>בוט טלגרם: מנשן, ‎/check, ‎/explain, הגדרות מנהל קבוצה</li><li>אימות עובדות מובנה, לוח בקרה, מתג חירום</li><li>יצירת תמונות על Cloudflare Workers AI</li><li>DeepSearch עם התקדמות חיה</li><li>זיכרון, סביבות עבודה, משימות מתוזמנות</li><li>תשלומים ומכסות שבועיות</li></ul></div>
     <div class="phase"><div class="ph">שלב ג · שבועות 23–36</div><h4>סוכנים תמיד דלוקים</h4>
-      <ul><li>Managed Agents: הגדרות סוכן מגורסות</li><li>חיבורי MCP: Gmail, Slack, GitHub, Notion</li><li>שערי אישור ותקציבים</li><li>קבוצות סוכנים</li><li>בטא סגור ל-50 צוותים, SOC 2 בתהליך</li></ul></div>
+      <ul><li>מתאמי X ודיסקורד לבוט המנשן</li><li>Managed Agents: הגדרות סוכן מגורסות</li><li>חיבורי MCP: Gmail, Slack, GitHub, Notion</li><li>שערי אישור ותקציבים</li><li>קבוצות סוכנים</li><li>בטא סגור ל-50 צוותים, SOC 2 בתהליך</li></ul></div>
   </div>
   <h4>צוות מינימלי</h4>
   <ul>
@@ -533,27 +553,37 @@ const final = await runner;   // → { verdict, confidence, text, sources[] }</c
   <h4>קריטריוני יציאה מכל שלב</h4>
   <ul>
     <li>שלב א: eval אימות עובדות ≥ 70%, עלות לשיחה ≤ 5 סנט, אפס אירועי בטיחות בבטא.</li>
-    <li>שלב ב: 10 אלף מנשנים מטופלים בשבוע, זמן תגובה p95 ≤ 45 שניות, דיוק ≥ 75%.</li>
+    <li>שלב ב: 10 אלף מנשנים בטלגרם בשבוע, זמן תגובה p95 ≤ 45 שניות, דיוק ≥ 75%, אפס תמונות של אנשים אמיתיים בביקורת מדגמית.</li>
     <li>שלב ג: 50 צוותים פעילים, 90% מהמשימות מסתיימות ללא התערבות מעבר לאישורים, אפס דליפות סודות בבדיקת חדירה.</li>
   </ul>
 </section>
 
 <!-- 12 -->
 <section id="s12">
-  <div class="sec-head"><span class="num">12</span><h2>סיכונים והחלטות פתוחות</h2></div>
+  <div class="sec-head"><span class="num">12</span><h2>סיכונים והכרעות מוצר</h2></div>
   <h4>סיכונים</h4>
   <ul>
-    <li><b>גישה לנתוני X.</b> X API יקר ומגביל. הפחתה: להתחיל בטלגרם ובחיפוש רשת, לרכוש X API רק אחרי אימות ביקוש.</li>
+    <li><b>גישה לנתוני X.</b> X API יקר ומגביל. הוכרע: מתחילים בטלגרם ובחיפוש רשת, ורוכשים X API רק אחרי 10 אלף מנשנים בשבוע בטלגרם.</li>
+    <li><b>מכסה חינמית של Cloudflare.</b> המכסה היומית משותפת לכל המשתמשים ועלולה להיגמר בשעות שיא. הפחתה: תור עם עדיפות, גיבוי ל-Pollinations, ומעבר לתשלום לפי שימוש רק אם זה קורה שלושה ימים ברצף.</li>
     <li><b>עלות כלים אגנטיים.</b> DeepSearch יכול לעלות פי 10 מצ'אט. הפחתה: תקרות קשיחות, מכסות, מטמון תוצאות חיפוש ל-15 דקות.</li>
     <li><b>תלות בספק מודל אחד.</b> הפחתה: שכבת הפשטה דקה סביב הקריאות, fallbacks, ניטור זמינות.</li>
     <li><b>אחריות משפטית על אימות עובדות.</b> הפחתה: ניסוח כ"מה מצאתי במקורות" ולא כפסיקה, תמיד עם קישורים, כתב ויתור בפרופיל הבוט.</li>
   </ul>
-  <h4>החלטות שדורשות הכרעה לפני תחילת שלב א</h4>
+  <h4>החלטות מוצר (הוכרעו 2026-09-10)</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>שאלה</th><th>הכרעה</th><th>השלכה על האיפיון</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td>פלטפורמה ראשונה לבוט המנשן</td><td><b>טלגרם</b></td><td>MENT-01 ממוקד ב-Bot API של טלגרם; X ודיסקורד נדחו לשלב ג (MENT-01b)</td></tr>
+      <tr><td class="num">2</td><td>יצירת תמונות</td><td><b>כן, על שירות חינמי קיים</b></td><td>פרק 5.6 חדש: Cloudflare Workers AI עם FLUX.1 schnell, גיבוי Pollinations, מדיניות אפס לאנשים אמיתיים</td></tr>
+      <tr><td class="num">3</td><td>אזור אחסון נתונים</td><td><b>המלצה: EU בלבד (פרנקפורט)</b>. לא הוכרע על ידי המוצר, נבחר כברירת מחדל</td><td>אזור אחד מפשט GDPR ועלויות; לישראל יש הכרת נאותות מהאיחוד האירופי, כך שהעברת נתונים חוקית; זמן תגובה מישראל לפרנקפורט כ-60ms. ניתן לשנות עד תחילת שלב א בלי עלות</td></tr>
+      <tr><td class="num">4</td><td>שם ומיתוג</td><td><b>Bombot, מותג עצמאי</b></td><td>שם הבוט בטלגרם ‎@bombot (יש לבדוק זמינות ולרשום גם ‎@bombot_bot), דומיין ואישיות משלו, לא תוסף למוצר קיים</td></tr>
+    </tbody>
+  </table></div>
+  <h4>מה עדיין פתוח</h4>
   <ol>
-    <li>פלטפורמה ראשונה לבוט המנשן: טלגרם (זול, מהיר) או X (הכי דומה ל-Grok, יקר)?</li>
-    <li>האם לתמוך ביצירת תמונות בכלל, בהתחשב בסיכוני הדיפ פייק?</li>
-    <li>אזור אחסון נתונים: EU בלבד או EU ו-US?</li>
-    <li>שם המוצר והאישיות: מותג עצמאי או תוסף למוצר קיים?</li>
+    <li>אישור סופי לאזור EU בלבד (החלטה 3).</li>
+    <li>זמינות השם ‎@bombot בטלגרם ודומיין bombot.ai או bombot.co.il.</li>
+    <li>קול ואישיות המותג: הנחיות טון בעברית ובאנגלית לפני כתיבת הפרומפט הראשי.</li>
   </ol>
 </section>
 
@@ -580,6 +610,9 @@ const final = await runner;   // → { verdict, confidence, text, sources[] }</c
     <li>TechCrunch, "xAI says it has fixed Grok 4's problematic responses": <a href="https://techcrunch.com/2025/07/15/xai-says-it-has-fixed-grok-4s-problematic-responses/">techcrunch.com</a></li>
     <li>Jones Walker, "The Grok Warning: When AI Governance Fails in Real-Time": <a href="https://www.joneswalker.com/en/insights/blogs/ai-law-blog/ai-governance-series-part-1-the-grok-warning-when-ai-governance-fails-in-real.html?id=102ksvg">joneswalker.com</a></li>
     <li>Datastudios, Grok Imagine ו-Aurora: <a href="https://www.datastudios.org/post/grok-4-adds-a-text-to-video-feature-called-imagine-powered-by-aurora-ai">datastudios.org</a></li>
+    <li>Eden AI, "Best Free AI Image Generation APIs &amp; Open-Source Models (2026)": <a href="https://www.edenai.co/post/top-free-image-generation-tools-apis-and-open-source-models">edenai.co</a></li>
+    <li>Runflow, "Free AI Image Generation API, What's Actually Free in 2026": <a href="https://www.runflow.io/blog/free-ai-image-generation-api-lies">runflow.io</a></li>
+    <li>Apiframe, "Free AI Image Generation API: What's Actually Free in 2026": <a href="https://apiframe.ai/blog/free-ai-image-generation-api-2026">apiframe.ai</a></li>
     <li>Heise, Grok מגיב למנשנים: <a href="https://www.heise.de/en/news/Grok-can-now-also-be-marked-in-posts-on-X-and-replies-10309008.html">heise.de</a></li>
   </ol>
 </section>
@@ -599,7 +632,7 @@ const final = await runner;   // → { verdict, confidence, text, sources[] }</c
     <li><a href="#s9"><span class="n">09</span>דרישות לא פונקציונליות</a></li>
     <li><a href="#s10"><span class="n">10</span>מודל עסקי</a></li>
     <li><a href="#s11"><span class="n">11</span>תוכנית עבודה</a></li>
-    <li><a href="#s12"><span class="n">12</span>סיכונים והחלטות</a></li>
+    <li><a href="#s12"><span class="n">12</span>סיכונים והכרעות</a></li>
     <li><a href="#s13"><span class="n">13</span>מקורות</a></li>
   </ol>
 </nav>
