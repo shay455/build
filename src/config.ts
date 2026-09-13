@@ -1,4 +1,11 @@
+import { existsSync } from "node:fs";
 import { z } from "zod";
+
+// Load .env from the working directory. Existing process env always wins, so a real deployment
+// can inject variables without a file. Node 22 ships this natively; no dotenv package needed.
+if (existsSync(".env")) {
+  try { process.loadEnvFile(".env"); } catch { /* unreadable .env: the validation below reports what is missing */ }
+}
 
 const Env = z.object({
   WA_PHONE_NUMBER_ID: z.string().min(1),
