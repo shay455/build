@@ -5,7 +5,7 @@ const Env = z.object({
   WA_ACCESS_TOKEN: z.string().min(1),
   WA_APP_SECRET: z.string().min(1),
   WA_VERIFY_TOKEN: z.string().min(1),
-  WA_API_VERSION: z.string().default("v23.0"),
+  WA_API_VERSION: z.string().default("v25.0"),
   OPERATOR_PHONE: z.string().regex(/^\d{8,15}$/, "digits only, no +"),
 
   ANTHROPIC_API_KEY: z.string().min(1),
