@@ -1,0 +1,38 @@
+{
+  "name": "ad-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "WhatsApp bot that turns a product photo + brief into ready-to-post ad creatives",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "smoke:overlay": "tsx scripts/smoke-overlay.ts",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
+    "@google/genai": "^2.22.0",
+    "@napi-rs/canvas": "^1.0.9",
+    "bullmq": "^6.3.4",
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.12.4",
+    "ioredis": "^5.6.1",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
+    "postgres": "^3.4.7",
+    "sharp": "^0.35.4",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "drizzle-kit": "^0.31.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
