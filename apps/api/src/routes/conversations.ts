@@ -6,7 +6,7 @@ import { runChatTurn } from "../orchestrator/chat.js";
 
 const SendSchema = z.object({
   text: z.string().min(1).max(20000),
-  mode: z.enum(["fast", "balanced", "deep"]).optional(),
+  mode: z.enum(["fast", "balanced", "deep", "research"]).optional(),
   think: z.boolean().optional(),
   attachmentIds: z.array(z.string().uuid()).max(10).optional(),
   locale: z.string().max(20).optional(),

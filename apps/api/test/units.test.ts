@@ -37,7 +37,7 @@ describe("safety filter", () => {
 });
 
 describe("mode mapping", () => {
-  it("never sends xhigh/max from the chat UI", () => {
-    expect(Object.values(EFFORT_BY_MODE)).toEqual(["low", "medium", "high"]);
+  it("maps chat modes to effort; only research reaches xhigh and nothing reaches max", () => {
+    expect(EFFORT_BY_MODE).toEqual({ fast: "low", balanced: "medium", deep: "high", research: "xhigh" });
   });
 });

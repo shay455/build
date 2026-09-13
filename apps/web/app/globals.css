@@ -111,3 +111,8 @@ button { font: inherit; color: inherit; }
 .src .dom { font-size: .74rem; color: var(--muted); direction: ltr; unicode-bidi: plaintext; text-align: start; }
 .src q { display: block; font-size: .8rem; color: var(--ink-2); margin-top: 4px; quotes: "“" "”"; }
 .sources .none { color: var(--muted); font-size: .88rem; }
+
+/* Generated images */
+.genimg { position: relative; display: block; max-width: 420px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); margin-top: 8px; }
+.genimg img { display: block; width: 100%; height: auto; }
+.genimg span { position: absolute; bottom: 6px; inset-inline-end: 8px; font-size: .7rem; background: rgba(0,0,0,.55); color: #fff; padding: 2px 7px; border-radius: 999px; }

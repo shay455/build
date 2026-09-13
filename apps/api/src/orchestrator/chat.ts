@@ -6,15 +6,33 @@ import type { LlmProvider } from "../llm/types.js";
 import { SafetyFilter } from "../safety/filter.js";
 import type { UploadStore } from "../storage/uploads.js";
 import type { FastifyBaseLogger } from "fastify";
+import type { Env } from "../config/env.js";
+import { ImagePolicyError, ImageQuotaError, type ImageService } from "../images/service.js";
 
 type BetaContent = Anthropic.Beta.BetaContentBlockParam;
 
 export interface OrchestratorDeps {
+  env: Env;
   repo: Repo;
   llm: LlmProvider;
   uploads: UploadStore;
+  images: ImageService;
   log: FastifyBaseLogger;
 }
+
+/** DEEP-01..03: research mode. Sent as a mid-conversation system message so the cached system prompt is untouched. */
+const RESEARCH_RULES = `Research mode for this turn.
+Work in phases and narrate them briefly as you go so the user sees progress:
+1. Plan: write 3 to 6 sub-questions that together answer the request (one line each).
+2. Search: run web searches for each sub-question; fetch the two or three most authoritative pages; prefer primary sources and recent dates. Note disagreements between sources.
+3. Self-check: before writing, list any claim you could not source and any place sources conflict.
+4. Report, in this structure (headers allowed in this mode):
+   - תקציר / Summary: 3 to 5 sentences.
+   - ממצאים / Findings: numbered, each with citations.
+   - מחלוקות / Disagreements: where sources differ and why.
+   - מה לא נמצא / Not found: what remains unverified.
+   - מקורות / Sources are shown by the app from your citations; do not paste a bibliography.
+Stay within the search budget; stop searching when new results repeat what you already have.`;
 
 /**
  * One assistant turn, end to end:
@@ -43,6 +61,13 @@ export async function* runChatTurn(
 
   const assistantId = randomUUID();
   yield { type: "message_start", messageId: assistantId, conversationId: conversation.id };
+
+  // IMG-01: "/imagine <prompt>" in chat generates an image instead of a text answer.
+  const imagine = /^\/imagine\s+([\s\S]+)/i.exec(req.text.trim());
+  if (imagine) {
+    yield* imageTurn(deps, conversation, assistantId, imagine[1]!.trim(), req.text, signal);
+    return;
+  }
 
   // 1. Input safety gate. A block ends the turn with a fixed reply; nothing reaches the main model.
   const inputCheck = await safety.check("input", req.text);
@@ -79,8 +104,15 @@ export async function* runChatTurn(
   let usage: MessageView["usage"] = null;
   let refused: { category: string | null } | null = null;
 
+  const research = mode === "research";
+  const turnSignal = research
+    ? AbortSignal.any([signal ?? new AbortController().signal, AbortSignal.timeout(deps.env.RESEARCH_TIMEOUT_MS)])
+    : signal;
   try {
-    for await (const ev of llm.streamChat({ messages: history, mode, think, signal })) {
+    for await (const ev of llm.streamChat({
+      messages: history, mode, think, signal: turnSignal,
+      ...(research ? { systemAddendum: RESEARCH_RULES, maxWebSearchUses: deps.env.RESEARCH_MAX_WEB_SEARCH_USES, maxTokens: 32000 } : {}),
+    })) {
       switch (ev.type) {
         case "text_delta":
           if (firstTokenAt === null) firstTokenAt = Date.now();
@@ -179,4 +211,35 @@ function userFacingError(err: unknown, userText: string): string {
   if (status === 429) return he ? "העומס גבוה כרגע. נסו שוב בעוד רגע." : "We're under heavy load. Please try again in a moment.";
   if (status === 401) return he ? "שגיאת הגדרה בצד השרת (אימות מול ספק המודל)." : "Server configuration error (model provider authentication).";
   return he ? "משהו השתבש בזמן יצירת התשובה. נסו שוב." : "Something went wrong while generating the answer. Please try again.";
+}
+
+/** One image-generation turn inside a chat conversation. The result is stored as an assistant message with an image attachment. */
+async function* imageTurn(deps: OrchestratorDeps, conversation: ConversationView, assistantId: string, prompt: string, userText: string, signal?: AbortSignal): AsyncGenerator<StreamEvent> {
+  const he = /[֐-׿]/.test(userText);
+  yield { type: "tool_start", tool: "web_fetch", input: he ? "יוצר תמונה…" : "generating image…" };
+  try {
+    const img = await deps.images.generate({ prompt, ownerKey: `chat:${conversation.id}`, dailyLimit: 60, signal });
+    const text = he ? `הנה התמונה עבור: "${prompt}"` : `Here is the image for: "${prompt}"`;
+    yield { type: "tool_result", tool: "web_fetch", ok: true, resultCount: 1 };
+    yield { type: "text_delta", text };
+    const saved = await deps.repo.insertMessage({
+      id: assistantId, conversationId: conversation.id, role: "assistant", text, thinking: null, citations: [],
+      attachments: [{ id: img.id, name: `bombot-${img.id.slice(0, 8)}.jpg`, mimeType: "image/generated", sizeBytes: 0 }], usage: null, safety: null,
+    });
+    yield { type: "done", message: saved };
+  } catch (err) {
+    const text = err instanceof ImagePolicyError
+      ? (he ? "אני לא יוצר תמונות של אנשים אמיתיים או תוכן פוגעני. נסו רעיון אחר." : "I don't generate images of real people or harmful content. Try another idea.")
+      : err instanceof ImageQuotaError
+        ? (he ? "הגעת למכסת התמונות היומית." : "You've reached today's image quota.")
+        : (he ? "יצירת התמונה נכשלה כרגע. נסו שוב מאוחר יותר." : "Image generation failed right now. Try again later.");
+    if (!(err instanceof ImagePolicyError) && !(err instanceof ImageQuotaError)) deps.log.error({ err }, "chat image generation failed");
+    yield { type: "tool_result", tool: "web_fetch", ok: false, resultCount: 0 };
+    yield { type: "text_delta", text };
+    const saved = await deps.repo.insertMessage({
+      id: assistantId, conversationId: conversation.id, role: "assistant", text, thinking: null, citations: [], attachments: [], usage: null,
+      safety: err instanceof ImagePolicyError ? { stage: "input", action: "block", category: "private_person_identification", reason: err.reason } : null,
+    });
+    yield { type: "done", message: saved };
+  }
 }

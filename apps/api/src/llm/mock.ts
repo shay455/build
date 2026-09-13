@@ -1,4 +1,4 @@
-import type { LlmProvider, ChatRequest, ProviderEvent, SafetyVerdict } from "./types.js";
+import type { LlmProvider, ChatRequest, ImagePromptResult, IntentResult, ProviderEvent, SafetyVerdict, VerdictResult } from "./types.js";
 import { estimateCostUsd } from "./pricing.js";
 
 /**
@@ -51,6 +51,28 @@ export class MockProvider implements LlmProvider {
   async classifySafety(input: { stage: "input" | "output"; text: string }): Promise<SafetyVerdict> {
     if (input.text.includes("[[BLOCK]]")) return { action: "block", category: "hate", reason: "mock: explicit block marker" };
     return { action: "allow", category: null, reason: "mock: allowed" };
+  }
+
+  async classifyIntent(input: { request: string; target: string | null; hasImage: boolean }): Promise<IntentResult> {
+    const r = input.request.toLowerCase();
+    if (/ignore (all )?previous instructions|system prompt/.test(r)) return { intent: "injection", claim: null, reason: "mock" };
+    if (/buy now|crypto giveaway/.test(r)) return { intent: "spam", claim: null, reason: "mock" };
+    if (/צייר|תמונה של|draw|image of|imagine/.test(r)) return { intent: "image", claim: null, reason: "mock" };
+    if (/תרגם|translate/.test(r)) return { intent: "translate", claim: null, reason: "mock" };
+    if (/סכם|summar/.test(r)) return { intent: "summarize", claim: null, reason: "mock" };
+    if (/הסבר|explain/.test(r)) return { intent: "explain", claim: null, reason: "mock" };
+    if (input.target && /נכון|אמת|true|check|בדוק|\?/.test(r)) return { intent: "fact_check", claim: input.target.slice(0, 200), reason: "mock" };
+    return { intent: "chat", claim: null, reason: "mock" };
+  }
+
+  async extractVerdict(input: { claim: string; answer: string }): Promise<VerdictResult> {
+    if (/שגוי|false/i.test(input.answer)) return { verdict: "false", confidence: 0.9 };
+    return { verdict: "partly_true", confidence: 0.7 };
+  }
+
+  async rewriteImagePrompt(input: { prompt: string }): Promise<ImagePromptResult> {
+    if (/[[]{2}BLOCK[\]]{2}|netanyahu|נתניהו/i.test(input.prompt)) return { allowed: false, reason: "mock: real person", englishPrompt: "" };
+    return { allowed: true, reason: "mock", englishPrompt: `A detailed illustration of: ${input.prompt}` };
   }
 }
 

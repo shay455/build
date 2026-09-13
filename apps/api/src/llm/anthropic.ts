@@ -4,8 +4,20 @@ import { z } from "zod";
 import type { Env } from "../config/env.js";
 import { blockedDomains } from "../config/env.js";
 import { estimateCostUsd } from "./pricing.js";
-import { EFFORT_BY_MODE, type ChatRequest, type LlmProvider, type ProviderEvent, type SafetyVerdict } from "./types.js";
+import { EFFORT_BY_MODE, type ChatRequest, type ImagePromptResult, type IntentResult, type LlmProvider, type ProviderEvent, type SafetyVerdict, type VerdictResult } from "./types.js";
+import { IMAGE_PROMPT_POLICY, INTENT_POLICY, VERDICT_POLICY } from "../safety/policy.js";
 import { SAFETY_POLICY } from "../safety/policy.js";
+
+const IntentSchema = z.object({
+  intent: z.enum(["fact_check", "explain", "translate", "summarize", "chat", "image", "spam", "injection"]),
+  claim: z.string().nullable(),
+  reason: z.string(),
+});
+const VerdictSchema = z.object({
+  verdict: z.enum(["true", "partly_true", "misleading", "false", "unverifiable", "not_a_claim"]),
+  confidence: z.number().min(0).max(1),
+});
+const ImagePromptSchema = z.object({ allowed: z.boolean(), reason: z.string(), englishPrompt: z.string() });
 
 const SafetySchema = z.object({
   action: z.enum(["allow", "block"]),
@@ -28,13 +40,13 @@ export class AnthropicProvider implements LlmProvider {
     this.client = env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY }) : new Anthropic();
   }
 
-  private tools() {
+  private tools(maxWebSearchUses = this.env.MAX_WEB_SEARCH_USES) {
     const blocked = blockedDomains(this.env);
     return [
       {
         type: "web_search_20260209" as const,
         name: "web_search" as const,
-        max_uses: this.env.MAX_WEB_SEARCH_USES,
+        max_uses: maxWebSearchUses,
         ...(blocked.length ? { blocked_domains: blocked } : {}),
       },
       {
@@ -49,6 +61,10 @@ export class AnthropicProvider implements LlmProvider {
 
   async *streamChat(req: ChatRequest): AsyncIterable<ProviderEvent> {
     const messages: Anthropic.Beta.BetaMessageParam[] = [...req.messages];
+    if (req.systemAddendum) {
+      // Mid-conversation operator instruction: must follow the user turn and be last (or followed by an assistant turn).
+      messages.push({ role: "system", content: req.systemAddendum });
+    }
     let text = "";
     let thinking = "";
     const totals = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, webSearch: 0 };
@@ -60,13 +76,13 @@ export class AnthropicProvider implements LlmProvider {
       const stream = this.client.beta.messages.stream(
         {
           model: this.env.MAIN_MODEL,
-          max_tokens: 16000,
+          max_tokens: req.maxTokens ?? 16000,
           betas: ["server-side-fallback-2026-07-01"],
           fallbacks: "default",
           thinking: req.think ? { type: "adaptive", display: "summarized" } : { type: "adaptive" },
           output_config: { effort: EFFORT_BY_MODE[req.mode] },
           system: [{ type: "text", text: this.systemPrompt, cache_control: { type: "ephemeral" } }],
-          tools: this.tools(),
+          tools: this.tools(req.maxWebSearchUses),
           messages,
         },
         { signal: req.signal },
@@ -156,6 +172,36 @@ export class AnthropicProvider implements LlmProvider {
         }),
       },
     };
+  }
+
+  /** Shared helper for the small structured-output classifiers on the fast model. */
+  private async structured<T extends z.ZodType>(system: string, user: string, schema: T): Promise<z.infer<T> | null> {
+    const response = await this.client.messages.parse({
+      model: this.env.SAFETY_MODEL,
+      max_tokens: 700,
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: user }],
+      output_config: { format: zodOutputFormat(schema) },
+    });
+    return (response.parsed_output as z.infer<T> | null) ?? null;
+  }
+
+  async classifyIntent(input: { request: string; target: string | null; hasImage: boolean }): Promise<IntentResult> {
+    const r = await this.structured(INTENT_POLICY,
+      `<request>\n${input.request.slice(0, 4000)}\n</request>\n<target_message>\n${(input.target ?? "(none)").slice(0, 6000)}\n</target_message>\nhas_image: ${input.hasImage}`,
+      IntentSchema);
+    return r ?? { intent: "chat", claim: null, reason: "classifier returned nothing; defaulted to chat" };
+  }
+
+  async extractVerdict(input: { claim: string; answer: string }): Promise<VerdictResult> {
+    const r = await this.structured(VERDICT_POLICY,
+      `<claim>\n${input.claim.slice(0, 3000)}\n</claim>\n<answer>\n${input.answer.slice(0, 8000)}\n</answer>`, VerdictSchema);
+    return r ?? { verdict: "unverifiable", confidence: 0.3 };
+  }
+
+  async rewriteImagePrompt(input: { prompt: string }): Promise<ImagePromptResult> {
+    const r = await this.structured(IMAGE_PROMPT_POLICY, `<prompt>\n${input.prompt.slice(0, 2000)}\n</prompt>`, ImagePromptSchema);
+    return r ?? { allowed: false, reason: "classifier returned nothing; failing closed for images", englishPrompt: "" };
   }
 
   async classifySafety(input: { stage: "input" | "output"; text: string }): Promise<SafetyVerdict> {

@@ -41,6 +41,12 @@ export function Message({ m, live }: { m: MessageView; live?: LiveStatus }) {
       {m.safety && <div className="safety">התשובה הוגבלה על ידי שכבת הבטיחות של Bombot.</div>}
       {live?.error && <div className="errbox">{live.error}</div>}
       <div className="bubble"><Markdown text={m.text} citations={m.citations} /></div>
+      {m.attachments.filter((a) => a.mimeType === "image/generated").map((a) => (
+        <a key={a.id} href={`/api/images/${a.id}`} target="_blank" rel="noopener noreferrer" className="genimg">
+          <img src={`/api/images/${a.id}`} alt={m.text} loading="lazy" />
+          <span>Bombot AI</span>
+        </a>
+      ))}
       {m.usage && (
         <div className="usage">
           {m.usage.webSearchRequests > 0 ? `${m.usage.webSearchRequests} חיפושים · ` : ""}

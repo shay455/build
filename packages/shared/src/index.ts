@@ -4,7 +4,7 @@
  */
 
 /** User-facing effort selector. Maps to Claude `output_config.effort`. */
-export type Mode = "fast" | "balanced" | "deep";
+export type Mode = "fast" | "balanced" | "deep" | "research";
 
 export type Role = "user" | "assistant";
 
@@ -106,7 +106,86 @@ export const MODE_LABELS: Record<Mode, { he: string; en: string }> = {
   fast: { he: "מהיר", en: "Fast" },
   balanced: { he: "מאוזן", en: "Balanced" },
   deep: { he: "מעמיק", en: "Deep" },
+  research: { he: "מחקר", en: "Research" },
 };
+
+/* ---------- Phase B: mention bot, images ---------- */
+
+export type BotPlatform = "telegram";
+
+export type BotIntent = "fact_check" | "explain" | "translate" | "summarize" | "chat" | "image" | "spam" | "injection";
+
+export type Verdict = "true" | "partly_true" | "misleading" | "false" | "unverifiable" | "not_a_claim";
+
+export const VERDICT_LABELS: Record<Verdict, { he: string; en: string; emoji: string }> = {
+  true: { he: "נכון", en: "True", emoji: "✅" },
+  partly_true: { he: "נכון חלקית", en: "Partly true", emoji: "🟡" },
+  misleading: { he: "מטעה", en: "Misleading", emoji: "⚠️" },
+  false: { he: "שגוי", en: "False", emoji: "❌" },
+  unverifiable: { he: "לא ניתן לאמת", en: "Unverifiable", emoji: "❔" },
+  not_a_claim: { he: "אין כאן טענה עובדתית", en: "No factual claim", emoji: "💬" },
+};
+
+export interface FactCheckResult {
+  verdict: Verdict;
+  /** 0..1 */
+  confidence: number;
+  text: string;
+  citations: Citation[];
+  usage: UsageSummary | null;
+}
+
+/** One handled bot request, as shown in the operator dashboard. */
+export interface BotRequestView {
+  id: string;
+  platform: BotPlatform;
+  chatId: string;
+  chatTitle: string | null;
+  userId: string;
+  userName: string | null;
+  intent: BotIntent;
+  requestText: string;
+  replyText: string | null;
+  replyMessageId: string | null;
+  verdict: Verdict | null;
+  confidence: number | null;
+  citations: Citation[];
+  safety: SafetyOutcome | null;
+  usage: UsageSummary | null;
+  latencyMs: number | null;
+  status: "answered" | "silent" | "rate_limited" | "blocked" | "error" | "deleted";
+  createdAt: string;
+}
+
+export interface ChatSettings {
+  chatId: string;
+  /** mention_only: answer only when @mentioned or replied to. commands_too: also plain /check etc. */
+  respondMode: "mention_only" | "commands_too";
+  language: "auto" | "he" | "en" | "ar";
+  blockedTopics: string[];
+  enabled: boolean;
+}
+
+export interface GeneratedImage {
+  id: string;
+  prompt: string;
+  /** The rewritten English prompt actually sent to the image model. */
+  finalPrompt: string;
+  provider: "cloudflare" | "pollinations" | "mock";
+  model: string;
+  width: number;
+  height: number;
+  url: string;
+  createdAt: string;
+}
+
+export const BOT_LIMITS = {
+  telegramReplyChars: 1200,
+  xReplyChars: 550,
+  freePerHour: 5,
+  subscriberPerHour: 30,
+  imagesPerDayFree: 10,
+} as const;
 
 export const MAX_UPLOAD_BYTES = 32 * 1024 * 1024;
 export const ALLOWED_UPLOAD_MIME = [

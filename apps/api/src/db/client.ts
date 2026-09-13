@@ -77,6 +77,71 @@ CREATE TABLE IF NOT EXISTS usage_log (
   first_token_ms INTEGER,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Phase B: mention bot
+CREATE TABLE IF NOT EXISTS tg_messages (
+  chat_id TEXT NOT NULL,
+  message_id BIGINT NOT NULL,
+  thread_id BIGINT,
+  reply_to_message_id BIGINT,
+  user_id TEXT,
+  user_name TEXT,
+  text TEXT NOT NULL DEFAULT '',
+  has_photo BOOLEAN NOT NULL DEFAULT false,
+  photo_file_id TEXT,
+  sent_at TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY (chat_id, message_id)
+);
+CREATE INDEX IF NOT EXISTS tg_messages_chat_time ON tg_messages(chat_id, sent_at DESC);
+CREATE TABLE IF NOT EXISTS bot_requests (
+  id TEXT PRIMARY KEY,
+  platform TEXT NOT NULL,
+  chat_id TEXT NOT NULL,
+  chat_title TEXT,
+  user_id TEXT NOT NULL,
+  user_name TEXT,
+  intent TEXT NOT NULL,
+  request_text TEXT NOT NULL,
+  reply_text TEXT,
+  reply_message_id TEXT,
+  verdict TEXT,
+  confidence REAL,
+  citations JSONB NOT NULL DEFAULT '[]'::jsonb,
+  safety JSONB,
+  usage JSONB,
+  latency_ms INTEGER,
+  status TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS bot_requests_user_time ON bot_requests(platform, user_id, created_at DESC);
+CREATE TABLE IF NOT EXISTS chat_settings (
+  chat_id TEXT PRIMARY KEY,
+  respond_mode TEXT NOT NULL DEFAULT 'mention_only',
+  language TEXT NOT NULL DEFAULT 'auto',
+  blocked_topics JSONB NOT NULL DEFAULT '[]'::jsonb,
+  enabled BOOLEAN NOT NULL DEFAULT true
+);
+CREATE TABLE IF NOT EXISTS bot_state (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS processed_updates (
+  update_id BIGINT PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS images (
+  id TEXT PRIMARY KEY,
+  owner_key TEXT,
+  prompt TEXT NOT NULL,
+  final_prompt TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  model TEXT NOT NULL,
+  width INTEGER NOT NULL,
+  height INTEGER NOT NULL,
+  storage_key TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS images_owner_time ON images(owner_key, created_at DESC);
 `;
 
 export async function migrate(db: Queryable): Promise<void> {

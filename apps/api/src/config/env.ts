@@ -14,6 +14,21 @@ const EnvSchema = z.object({
   SAFETY_MODEL: z.string().default("claude-haiku-4-5"),
   MAX_WEB_SEARCH_USES: z.coerce.number().default(5),
   MAX_WEB_FETCH_USES: z.coerce.number().default(4),
+  RESEARCH_MAX_WEB_SEARCH_USES: z.coerce.number().default(25),
+  RESEARCH_TIMEOUT_MS: z.coerce.number().default(5 * 60 * 1000),
+  /** Public base URL of this API, used for image links sent to Telegram. */
+  PUBLIC_API_URL: z.string().default("http://localhost:4000"),
+  /** Bearer token for /api/admin/* (operator dashboard, kill switch). Empty disables the admin routes. */
+  ADMIN_TOKEN: z.string().default(""),
+  // Telegram mention bot
+  TELEGRAM_BOT_TOKEN: z.string().default(""),
+  TELEGRAM_BOT_USERNAME: z.string().default("bombot"),
+  TELEGRAM_WEBHOOK_SECRET: z.string().default(""),
+  // Image generation (free tier): cloudflare | pollinations | mock
+  IMAGE_PROVIDER: z.enum(["cloudflare", "pollinations", "mock"]).default("pollinations"),
+  CF_ACCOUNT_ID: z.string().default(""),
+  CF_API_TOKEN: z.string().default(""),
+  CF_IMAGE_MODEL: z.string().default("@cf/black-forest-labs/flux-1-schnell"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

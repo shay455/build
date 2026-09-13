@@ -57,7 +57,7 @@ export function Composer({ disabled, onSend, onStop }: ComposerProps) {
             ref={taRef}
             value={text}
             rows={1}
-            placeholder="שאלו כל דבר. Bombot יחפש ברשת כשצריך ויצרף מקורות."
+            placeholder="שאלו כל דבר. Bombot יחפש ברשת כשצריך ויצרף מקורות. ‎/imagine ליצירת תמונה."
             aria-label="הודעה"
             onChange={(e) => { setText(e.target.value); e.target.style.height = "auto"; e.target.style.height = `${e.target.scrollHeight}px`; }}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }}
@@ -81,7 +81,7 @@ export function Composer({ disabled, onSend, onStop }: ComposerProps) {
           </div>
         </div>
         {uploadError && <div className="errbox">{uploadError}</div>}
-        <div className="hint">Enter לשליחה, Shift+Enter לשורה חדשה. Bombot יכול לטעות. בדקו את המקורות.</div>
+        <div className="hint">Enter לשליחה, Shift+Enter לשורה חדשה. מצב מחקר עשוי לקחת עד 5 דקות. Bombot יכול לטעות, בדקו את המקורות.</div>
       </div>
     </div>
   );

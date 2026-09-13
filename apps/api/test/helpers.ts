@@ -8,7 +8,7 @@ import type { StreamEvent } from "@bombot/shared";
 export async function testApp() {
   const dir = mkdtempSync(path.join(os.tmpdir(), "bombot-test-"));
   const env = loadEnv({
-    LLM_PROVIDER: "mock", PGLITE_DIR: ":memory:", UPLOAD_DIR: path.join(dir, "uploads"), LOG_LEVEL: "silent",
+    LLM_PROVIDER: "mock", PGLITE_DIR: ":memory:", UPLOAD_DIR: path.join(dir, "uploads"), LOG_LEVEL: "silent", IMAGE_PROVIDER: "mock",
   } as NodeJS.ProcessEnv);
   return buildApp(env);
 }
