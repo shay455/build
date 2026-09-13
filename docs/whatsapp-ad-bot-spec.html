@@ -1,0 +1,387 @@
+<title>מודעה ב‑98</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F5F7F3; --surface:#FFFFFF; --surface-2:#EDF1EA; --ink:#172019; --ink-2:#4B584F; --muted:#7A867D;
+  --line:#D7DED6; --line-2:#C3CCC3; --accent:#1E8A5A; --accent-ink:#0F5C3B; --accent-soft:#DDF0E4;
+  --money:#B7791F; --money-soft:#F8EBD3; --warn:#B3452B; --warn-soft:#F9E3DC; --code:#1B2620; --code-ink:#DCE7DE;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1512; --surface:#161E19; --surface-2:#1D2721; --ink:#E6ECE6; --ink-2:#B7C2B9; --muted:#7F8C83;
+    --line:#26332B; --line-2:#334238; --accent:#4CC38A; --accent-ink:#8FE0B7; --accent-soft:#17301F;
+    --money:#E0B35A; --money-soft:#2C2413; --warn:#E8825F; --warn-soft:#2E1B15; --code:#0B100D; --code-ink:#CBD8CE;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1512; --surface:#161E19; --surface-2:#1D2721; --ink:#E6ECE6; --ink-2:#B7C2B9; --muted:#7F8C83;
+  --line:#26332B; --line-2:#334238; --accent:#4CC38A; --accent-ink:#8FE0B7; --accent-soft:#17301F;
+  --money:#E0B35A; --money-soft:#2C2413; --warn:#E8825F; --warn-soft:#2E1B15; --code:#0B100D; --code-ink:#CBD8CE;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.65;direction:rtl;text-align:right}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:32px 80px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr);gap:24px}}
+nav.toc{position:sticky;top:24px;font-size:14px;border-inline-start:2px solid var(--line);padding-inline-start:14px}
+@media (max-width:860px){nav.toc{position:static;border:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 14px}}
+nav.toc a{display:block;color:var(--ink-2);text-decoration:none;padding-block:4px}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent-ink)}
+nav.toc .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+main{min-width:0}
+h1,h2,h3{font-family:"Frank Ruhl Libre","David",Georgia,serif;text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(34px,5vw,54px);font-weight:900}
+h2{font-size:28px;font-weight:700;margin-block:56px 14px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:20px;font-weight:700;margin-block:26px 8px}
+p{margin:0 0 12px;max-width:72ch}
+ul,ol{margin:0 0 12px;padding-inline-start:22px;max-width:72ch}
+li{margin-bottom:5px}
+.eyebrow{font-size:12px;letter-spacing:.16em;color:var(--accent-ink);font-weight:500;margin-bottom:10px}
+.lede{font-size:19px;color:var(--ink-2);max-width:62ch;margin-top:14px;font-weight:300}
+.hero{padding-bottom:8px}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:26px}
+.key{background:var(--surface);border:1px solid var(--line);padding:14px 16px;border-radius:6px}
+.key .n{font-family:"Frank Ruhl Libre",serif;font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.key .n small{font-size:15px;font-weight:500;color:var(--muted)}
+.key .l{font-size:13px;color:var(--muted);margin-top:4px}
+.key.money .n{color:var(--money)}
+.key.green .n{color:var(--accent)}
+.tablewrap{overflow-x:auto;margin-block:12px 18px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;text-align:right}
+th{font-weight:500;color:var(--muted);font-size:12.5px;letter-spacing:.04em;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.num,th.num{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:left;direction:ltr}
+td.ils{font-weight:500;color:var(--money)}
+tr.total td{font-weight:700;background:var(--surface-2)}
+tr.rec td:first-child::before{content:"★ ";color:var(--accent)}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-weight:500;vertical-align:middle}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.money{background:var(--money-soft);color:var(--money)}
+.note{border-inline-start:3px solid var(--money);background:var(--money-soft);padding:10px 14px;border-radius:4px;margin-block:14px;max-width:72ch;font-size:15px}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note.ok{border-color:var(--accent);background:var(--accent-soft)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-block:16px;counter-reset:step}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;position:relative;counter-increment:step;min-height:118px}
+.step::before{content:counter(step);position:absolute;top:10px;left:12px;font-family:"Frank Ruhl Libre",serif;font-size:26px;font-weight:700;color:var(--line-2);line-height:1}
+.step b{display:block;font-weight:700;margin-bottom:4px;padding-inline-end:0}
+.step span{font-size:13.5px;color:var(--ink-2);display:block}
+.step .who{font-size:11px;letter-spacing:.1em;color:var(--accent-ink);margin-bottom:6px}
+.arch{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-block:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.box h4{margin:0 0 6px;font-size:15px;font-weight:700}
+.box p{font-size:14px;color:var(--ink-2);margin:0}
+.box .tag{font-size:11.5px;color:var(--muted);letter-spacing:.06em;margin-bottom:6px}
+pre{direction:ltr;text-align:left;background:var(--code);color:var(--code-ink);padding:14px 16px;border-radius:6px;overflow-x:auto;font-size:13px;line-height:1.55;margin-block:10px 16px}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--surface-2);padding:0 5px;border-radius:3px;direction:ltr;unicode-bidi:embed}
+.bar{display:flex;height:34px;border-radius:5px;overflow:hidden;border:1px solid var(--line);margin-block:10px 6px;max-width:720px}
+.bar div{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--ink-2);max-width:720px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:6px;vertical-align:-1px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-block:12px}
+.src{font-size:13.5px;color:var(--ink-2)}
+.src a{color:var(--accent-ink)}
+.small{font-size:13px;color:var(--muted)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: no-preference){.step,.key{transition:border-color .15s}}
+.step:hover,.key:hover{border-color:var(--line-2)}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="תוכן">
+  <div class="k">איפיון</div>
+  <a href="#summary">תקציר</a>
+  <a href="#flow">תהליך הלקוח</a>
+  <a href="#arch">ארכיטקטורה</a>
+  <a href="#func">פירוט פונקציונלי</a>
+  <a href="#pipeline">שרשרת הייצור</a>
+  <a href="#prices">מחירון ספקים</a>
+  <a href="#unit">כלכלת יחידה</a>
+  <a href="#packages">חבילות ומחירים</a>
+  <a href="#risks">סיכונים והחלטות</a>
+  <a href="#plan">תוכנית פיתוח</a>
+  <a href="#sources">מקורות</a>
+</nav>
+
+<main>
+<header class="hero" id="summary">
+  <div class="eyebrow">מסמך איפיון · גרסה 1.0 · ספטמבר 2026</div>
+  <h1>מודעה ב‑98: בוט וואטסאפ שמייצר קריאייטיב לעסקים קטנים</h1>
+  <p class="lede">בעל עסק שולח תמונת מוצר ומשפט אחד. תוך דקות הוא מקבל בחזרה תמונת מודעה מוכנה בשני פורמטים וסרטון קצר לרילס, בעברית נכונה, מוכן להעלאה. המסמך מגדיר מה נבנה, איך, ומה כל פעולה עולה לך בפועל.</p>
+  <div class="keys">
+    <div class="key money"><div class="n">98 <small>₪</small></div><div class="l">מחיר ללקוח, כולל מע״מ</div></div>
+    <div class="key"><div class="n">≈ 6 <small>₪</small></div><div class="l">עלות AI ותשתית למודעה (תמונות + סרטון 5 שנ׳)</div></div>
+    <div class="key green"><div class="n">≈ 74 <small>₪</small></div><div class="l">נטו למודעה אחרי מע״מ, סליקה ועלויות (עוסק מורשה)</div></div>
+    <div class="key"><div class="n">3–5 <small>דק׳</small></div><div class="l">זמן ייצור יעד מרגע קבלת החומרים</div></div>
+  </div>
+  <p class="small" style="margin-top:14px">כל הסכומים בשקלים חושבו לפי שער של 3.35 ₪ לדולר. המחירים בדולרים נלקחו מדפי התמחור של הספקים בספטמבר 2026 ומצורפים מקורות בסוף. עדכן את השער והמחירים לפני שאתה מתמחר חבילות.</p>
+</header>
+
+<h2 id="flow">1. תהליך הלקוח, מקצה לקצה</h2>
+<p>יש שני משתמשים: <b>בעל העסק</b> (הלקוח שמשלם) ו<b>אתה</b> (המפעיל). בגרסה הראשונה הלקוח לא מדבר עם הבוט ישירות. הוא שולח לך חומרים בוואטסאפ הרגיל, אתה מעביר לבוט, ואתה שולח לו את התוצר. זה מאפשר בקרת איכות אנושית על כל מודעה, וזה גם מה שמצדיק את המחיר.</p>
+<div class="flow">
+  <div class="step"><div class="who">אתה</div><b>מכירה</b><span>פנייה לבעל עסק. הצעה: מודעה מוכנה ב‑98 ₪, תשלום מקדים בביט או בקישור סליקה.</span></div>
+  <div class="step"><div class="who">הלקוח</div><b>שליחת חומרים</b><span>תמונת מוצר אחת או יותר, מה לכתוב במודעה, ואם יש לוגו וצבעי מותג.</span></div>
+  <div class="step"><div class="who">אתה</div><b>פתיחת עבודה בבוט</b><span>שולח לבוט את התמונה ואת הבריף. הבוט מזהה לקוח קיים לפי שם או מספר.</span></div>
+  <div class="step"><div class="who">הבוט</div><b>הבנה ואישור</b><span>Claude מנתח את התמונה, כותב כותרת, משפט תמיכה וקריאה לפעולה, ומחזיר לך לאישור בהודעה אחת.</span></div>
+  <div class="step"><div class="who">הבוט</div><b>ייצור</b><span>3 גרסאות תמונה, בחירה, שני פורמטים (1:1 ו‑9:16), ואז סרטון 5 שנ׳ מהתמונה הזוכה.</span></div>
+  <div class="step"><div class="who">אתה</div><b>בקרה ותיקון</b><span>מקבל את הכל בוואטסאפ. פקודות: "עוד גרסה", "שנה טקסט ל…", "בלי סרטון". סבב תיקונים אחד כלול.</span></div>
+  <div class="step"><div class="who">אתה → הלקוח</div><b>מסירה</b><span>שולח ללקוח קובץ תמונה + MP4, עם המלצת טקסט לפוסט. הבוט שומר הכל בארכיון הלקוח.</span></div>
+</div>
+<div class="note ok"><b>למה לא לתת ללקוח לדבר עם הבוט ישירות?</b> אפשר, וזה שלב 2 (ראה תוכנית פיתוח). בשלב 1 זה מייקר: כל לקוח צריך להיות מוסבר, הבוט צריך לטפל בשאלות שירות, ומספר הוואטסאפ העסקי חשוף לתלונות ספאם. מודל "אתה באמצע" מאפשר להתחיל בלי אימות עסק מלא במטא ולמכור מהיום הראשון.</div>
+
+<h2 id="arch">2. ארכיטקטורה</h2>
+<p>שרת אחד קטן, תור עבודות, ושלושה ספקי AI. אין צורך בקוברנטיס או במיקרו‑שירותים. הכל נכתב ב‑TypeScript כדי לעבוד עם SDK אחד לכל הספקים.</p>
+<div class="arch">
+  <div class="box"><div class="tag">ערוץ</div><h4>WhatsApp Cloud API (מטא, ישיר)</h4><p>Webhook נכנס להודעות ומדיה, שליחה חוזרת דרך Graph API. חינם כפלטפורמה, משלמים למטא רק על הודעות תבנית. לא צריך ספק ביניים (BSP).</p></div>
+  <div class="box"><div class="tag">שרת</div><h4>Node.js + Fastify</h4><p>מקבל Webhook, מאמת חתימה, מוריד מדיה, שומר לאחסון ומכניס משימה לתור. עונה למטא תוך 200ms כדי לא לקבל שליחה חוזרת.</p></div>
+  <div class="box"><div class="tag">תור</div><h4>BullMQ על Redis</h4><p>כל מודעה היא Job עם שלבים: בריף → קופי → תמונות → פורמטים → סרטון → מסירה. ניסיון חוזר אוטומטי לכל שלב, מקסימום 2.</p></div>
+  <div class="box"><div class="tag">מוח</div><h4>Claude Opus 5 (Anthropic API)</h4><p>קורא את תמונת המוצר והבריף, מחזיר JSON מובנה: כותרת, משפט, CTA, פרומפט לתמונה, פרומפט לסרטון, צבעים מומלצים. Haiku 4.5 מטפל בניתוב פקודות זולות.</p></div>
+  <div class="box"><div class="tag">תמונה</div><h4>Nano Banana Pro (Gemini 3 Pro Image)</h4><p>עריכה על בסיס תמונת המוצר האמיתית: רקע, תאורה, קומפוזיציה. הטקסט העברי לא מוטבע על ידי המודל אלא מצויר בקוד (ראה סעיף 4.4).</p></div>
+  <div class="box"><div class="tag">סרטון</div><h4>Kling v3 דרך fal.ai</h4><p>תמונה‑לסרטון 5 או 10 שניות, 9:16, עם אודיו. fal.ai נותן API אחיד לכמה מודלים, כך שאפשר להחליף מודל בלי לשנות קוד.</p></div>
+  <div class="box"><div class="tag">טקסט</div><h4>Sharp + פונט עברי</h4><p>שכבת הטקסט, הלוגו והמסגרת מצוירות בקוד על התמונה שנוצרה. עברית תמיד נכונה, פונט אחיד (Heebo / Assistant), ואפשר לשנות טקסט בלי לייצר תמונה מחדש.</p></div>
+  <div class="box"><div class="tag">נתונים</div><h4>Postgres (Supabase) + Cloudflare R2</h4><p>לקוחות, עבודות, גרסאות, עלות בפועל לכל קריאה. קבצים ב‑R2 עם קישור חתום. דשבורד מינימלי לרשימת עבודות.</p></div>
+</div>
+
+<h2 id="func">3. פירוט פונקציונלי</h2>
+<h3>3.1 קלט מהלקוח</h3>
+<div class="tablewrap"><table>
+<tr><th>שדה</th><th>חובה</th><th>כללים</th></tr>
+<tr><td>תמונת מוצר</td><td>כן</td><td>1 עד 4 תמונות, JPG/PNG/HEIC, מינימום 800px בצד הקצר. תמונה חלשה מקבלת הודעה: "התמונה קטנה או מטושטשת, המודעה תצא פחות טוב. להמשיך?"</td></tr>
+<tr><td>הטקסט למודעה</td><td>כן</td><td>חופשי. Claude מפרק לכותרת (עד 6 מילים), משפט תמיכה (עד 12 מילים) וקריאה לפעולה (עד 4 מילים). אם הלקוח כתב מחיר או תאריך, הם נשמרים מילה במילה.</td></tr>
+<tr><td>לוגו</td><td>לא</td><td>PNG עם רקע שקוף מועדף. נשמר בכרטיס הלקוח לפעם הבאה.</td></tr>
+<tr><td>צבעי מותג</td><td>לא</td><td>עד 2 צבעים. אם אין, Claude מציע לפי המוצר והלוגו.</td></tr>
+<tr><td>סגנון</td><td>לא</td><td>מילת מפתח אחת: יוקרתי / חם / נקי / צעיר / חגיגי. ברירת מחדל: Claude בוחר ומסביר במשפט.</td></tr>
+<tr><td>פורמטים</td><td>לא</td><td>ברירת מחדל: 1080×1080 (פיד) + 1080×1920 (סטורי/רילס). אופציה: 1080×1350 (פיד גבוה), 1200×628 (פייסבוק/גוגל).</td></tr>
+</table></div>
+
+<h3>3.2 פקודות בוואטסאפ (למפעיל)</h3>
+<div class="tablewrap"><table>
+<tr><th>מה כותבים</th><th>מה קורה</th></tr>
+<tr><td><code>לקוח: מאפיית ניר</code> + תמונה + טקסט</td><td>פותח עבודה חדשה ומשייך ללקוח. אם הלקוח לא קיים, נוצר כרטיס.</td></tr>
+<tr><td><code>אישור</code></td><td>מאשר את הקופי שהבוט הציע וממשיך לייצור.</td></tr>
+<tr><td><code>כותרת: …</code></td><td>מחליף כותרת ומצייר מחדש את שכבת הטקסט בלי ייצור תמונה חדש. עלות אפס.</td></tr>
+<tr><td><code>עוד גרסה</code></td><td>מייצר תמונה נוספת. נספר במסגרת סבב התיקונים.</td></tr>
+<tr><td><code>סרטון 10</code></td><td>מייצר סרטון 10 שניות במקום 5.</td></tr>
+<tr><td><code>בלי סרטון</code> / <code>רק סרטון</code></td><td>מדלג על שלב.</td></tr>
+<tr><td><code>סיום</code></td><td>סוגר את העבודה, שולח סיכום עלות בפועל ומעביר לארכיון.</td></tr>
+<tr><td><code>עלויות</code></td><td>מחזיר סך עלויות API של החודש לעומת הכנסות שהוזנו.</td></tr>
+</table></div>
+
+<h3>3.3 פלט</h3>
+<ul>
+  <li><b>תמונות:</b> JPG באיכות 90, sRGB, בכל פורמט שנבחר. כל קובץ בשם קריא: <code>nir-bakery_2026-09-13_feed.jpg</code>.</li>
+  <li><b>סרטון:</b> MP4 H.264, 1080×1920, 5 או 10 שניות, 24–30 פריימים לשנייה, עם אודיו. מתחת ל‑16MB כדי לעבור בוואטסאפ כמדיה ולא כמסמך.</li>
+  <li><b>טקסט לפוסט:</b> 2 גרסאות של כיתוב לפוסט עם האשטגים, נכתבות על ידי Claude באותה קריאה.</li>
+  <li><b>קישור לארכיון:</b> קישור חתום תקף 30 יום לכל קבצי העבודה.</li>
+</ul>
+
+<h3>3.4 עברית: ההחלטה החשובה במסמך</h3>
+<p>מודלי תמונה מייצרים טקסט לטיני טוב, ועברית עדיין לא אמינה: אותיות מתהפכות, ניקוד מדומה, כיווניות שגויה. לכן הבוט <b>לא מבקש מהמודל להטביע טקסט</b>. המודל מייצר את הסצנה עם אזור פנוי לטקסט ("negative space" בשליש העליון), והשרת מצייר את הכותרת, המשפט, הקריאה לפעולה והלוגו בקוד עם פונט עברי. היתרונות: עברית מושלמת כל פעם, החלפת טקסט חינם, עקביות בין הפורמטים, ואפשר להשתמש גם במודל תמונה זול יותר.</p>
+<p>יוצא מן הכלל: כשהלקוח רוצה טקסט "בתוך" הסצנה (ניאון, חריטה, כתב יד על שלט), מפעילים Nano Banana Pro עם הטקסט בפרומפט ומבצעים בדיקת OCR אוטומטית. אם ה‑OCR לא קורא בדיוק את הטקסט המבוקש, מייצרים שוב, עד 2 פעמים, ואז חוזרים לשכבת קוד.</p>
+
+<h3>3.5 בטיחות תוכן וזכויות</h3>
+<ul>
+  <li>הלקוח מאשר בהודעת הפתיחה שהתמונות שלו ושיש לו זכות להשתמש בהן. הנוסח נשמר עם העבודה.</li>
+  <li>Claude מסמן בריף שכולל טענות רפואיות, הבטחות פיננסיות, אלכוהול לקטינים או השוואה שמית למתחרה. אתה מחליט אם להמשיך.</li>
+  <li>אין ייצור פרצופים של אנשים אמיתיים מהתמונה שנשלחה. אם יש אדם בתמונה, המודל שומר עליו כמו שהוא ולא "משפר".</li>
+  <li>סירוב מודל (refusal) מטופל: הבוט מסביר במשפט מה נחסם ומציע ניסוח אחר.</li>
+</ul>
+
+<h3>3.6 שגיאות ומצבי קצה</h3>
+<div class="tablewrap"><table>
+<tr><th>מצב</th><th>התנהגות</th></tr>
+<tr><td>ספק AI לא זמין / 5xx</td><td>ניסיון חוזר פעמיים עם השהיה. אחרי זה מעבר למודל גיבוי (תמונה: GPT Image 2; סרטון: Seedance) והודעה למפעיל.</td></tr>
+<tr><td>ייצור ארוך מהרגיל</td><td>אחרי 90 שניות הבוט שולח "עדיין עובד על הסרטון". אחרי 6 דקות מסמן כשל ולא מחייב.</td></tr>
+<tr><td>מדיה לא ירדה מוואטסאפ</td><td>קישורי מדיה של מטא תקפים 5 דקות. ההורדה מתבצעת מיד ב‑Webhook לפני הכנסה לתור.</td></tr>
+<tr><td>כפילות Webhook</td><td>מטא שולחת שוב אם לא קיבלה 200. מזהה ההודעה נשמר ומבטל כפילות.</td></tr>
+<tr><td>הודעה מחוץ לחלון 24 שעות</td><td>שליחה ללקוח (בשלב 2) דורשת תבנית utility מאושרת. הבוט משתמש בתבנית "המודעה שלך מוכנה" ולא בהודעה חופשית.</td></tr>
+</table></div>
+
+<h2 id="pipeline">4. שרשרת הייצור בפירוט</h2>
+<h3>4.1 קריאת Claude אחת לכל בריף</h3>
+<p>קריאה אחת ל‑<code>claude-opus-5</code> עם תמונת המוצר, הבריף, וכרטיס הלקוח. הפלט מובנה (structured output) כך שהקוד לא מנתח טקסט חופשי. הפעלת <code>fallbacks: "default"</code> מבטיחה תשובה גם אם הבקשה נחסמה על ידי מסנן בטיחות.</p>
+<pre><code>{
+  "headline":        "לחם מחמצת טרי כל בוקר",
+  "subline":         "נאפה ב‑5:00, אצלכם ב‑8:00",
+  "cta":             "להזמנה בוואטסאפ",
+  "post_caption":    ["…", "…"],
+  "palette":         { "primary": "#3B2A1E", "accent": "#E8C170" },
+  "text_zone":       "top",
+  "image_prompt":    "Editorial product photo of the provided sourdough loaf on a rustic oak board, warm morning window light from the left, soft steam, shallow depth of field, empty negative space in the top third for typography, no text, no letters",
+  "video_prompt":    "Slow 5s dolly-in on the loaf, steam rising, light shifting warmer, subtle crust crackle sound",
+  "flags":           []
+}</code></pre>
+<h3>4.2 תמונות</h3>
+<ol>
+  <li>שלוש קריאות במקביל ל‑Nano Banana Pro ברזולוציה 2K, יחס 1:1, עם תמונת המוצר כרפרנס והפרומפט מסעיף 4.1. תמונה אחת בסגנון שונה מעט (variation) כדי לתת בחירה.</li>
+  <li>Claude Haiku 4.5 מדרג את השלוש לפי הבריף ומסמן מנצחת. אתה יכול לעקוף.</li>
+  <li>לפורמט 9:16 לא מייצרים מחדש: המנצחת מורחבת ב‑outpaint (קריאה אחת נוספת) או מונחת על רקע מוצק בצבע המותג. ההרחבה יקרה יותר אבל נראית טוב יותר לסטורי.</li>
+  <li>שכבת טקסט ולוגו מצוירת ב‑Sharp על כל פורמט, עם בדיקת ניגודיות אוטומטית (אם הרקע בהיר, מתווסף גרדיאנט עדין מאחורי הטקסט).</li>
+</ol>
+<h3>4.3 סרטון</h3>
+<ol>
+  <li>התמונה המנצחת <b>ללא</b> שכבת הטקסט נשלחת ל‑Kling v3 Standard (image‑to‑video) עם video_prompt, 5 שניות, 9:16, אודיו פועל.</li>
+  <li>הטקסט מתווסף כשכבת כתוביות ב‑ffmpeg בשתי השניות האחרונות (כותרת + CTA), כך שהעברית נכונה גם בסרטון.</li>
+  <li>לחבילה גבוהה יותר: Kling v3 Pro או 10 שניות. הפרש העלות מופיע בטבלה.</li>
+</ol>
+<h3>4.4 רישום עלות בפועל</h3>
+<p>כל קריאת API נרשמת בטבלת <code>api_calls</code> עם ספק, מודל, פרמטרים ועלות מחושבת. כך פקודת <code>עלויות</code> מציגה מספר אמיתי ולא הערכה, ואתה יודע מתי לקוח "עלה" יותר מהמותר בסבבי תיקונים.</p>
+
+<h2 id="prices">5. מחירון ספקים: כמה עולה כל פעולה</h2>
+<p>המחירים הם תעריפי API רשמיים לפי דפי הספקים בספטמבר 2026, בדולר, ומתורגמים לשקל לפי 3.35. שורה מסומנת ב‑★ היא הבחירה המומלצת לגרסה הראשונה.</p>
+
+<h3>5.1 וואטסאפ</h3>
+<div class="tablewrap"><table>
+<tr><th>פעולה</th><th class="num">USD</th><th class="num">₪</th><th>הערות</th></tr>
+<tr class="rec"><td>הודעה חופשית בתוך חלון 24 שעות שהלקוח פתח (service)</td><td class="num">0</td><td class="num ils">0</td><td>כל תגובה להודעה שהגיעה אליך. בנוסף 1,000 הודעות שירות חינם בחודש לכל מספר.</td></tr>
+<tr><td>הודעת תבנית utility (למשל "המודעה מוכנה") מחוץ לחלון</td><td class="num">0.0053</td><td class="num ils">0.02</td><td>תעריף מטא לנמען בישראל, לכל הודעה שנמסרה.</td></tr>
+<tr><td>הודעת תבנית marketing לנמען בישראל</td><td class="num">0.0353</td><td class="num ils">0.12</td><td>רלוונטי רק אם תשלח ללקוחות קמפיינים יזומים.</td></tr>
+<tr class="rec"><td>WhatsApp Cloud API ישירות ממטא, דמי פלטפורמה</td><td class="num">0 / חודש</td><td class="num ils">0</td><td>דורש חשבון Meta Business, מספר טלפון ייעודי ואפליקציית מפתח. אין עמלת ספק ביניים.</td></tr>
+<tr><td>360dialog (ספק ביניים, ללא תוספת על הודעות)</td><td class="num">≈ 57 / חודש</td><td class="num ils">≈ 190</td><td>€49 לחודש. שווה רק אם רוצים ממשק ניהול ותמיכה.</td></tr>
+<tr><td>Twilio (ספק ביניים, תוספת לכל הודעה)</td><td class="num">0.005 / הודעה</td><td class="num ils">0.017</td><td>זול בנפח נמוך, מתייקר בנפח גבוה.</td></tr>
+<tr><td>API לא רשמי (Green API, WAHA וכדומה)</td><td class="num">≈ 8 / חודש</td><td class="num ils">≈ 27</td><td><span class="pill warn">לא מומלץ</span> מבוסס WhatsApp Web, מפר תנאי שימוש, המספר יכול להיחסם לצמיתות בלי התראה.</td></tr>
+</table></div>
+
+<h3>5.2 מודל שפה (Anthropic)</h3>
+<div class="tablewrap"><table>
+<tr><th>פעולה</th><th>מודל</th><th class="num">USD</th><th class="num">₪</th><th>חישוב</th></tr>
+<tr class="rec"><td>בריף אחד → קופי + פרומפטים + כיתובים</td><td>Claude Opus 5</td><td class="num">≈ 0.045</td><td class="num ils">0.15</td><td>≈3K טוקני קלט (כולל תמונה) × $5/M + ≈1.2K פלט × $25/M</td></tr>
+<tr><td>אותה פעולה, חלופה זולה</td><td>Claude Sonnet 5</td><td class="num">≈ 0.018</td><td class="num ils">0.06</td><td>$2/M קלט, $10/M פלט. איכות קופי בעברית טובה, מעט פחות עדינה.</td></tr>
+<tr class="rec"><td>ניתוב פקודות, דירוג 3 תמונות, סיכומים</td><td>Claude Haiku 4.5</td><td class="num">≈ 0.01 / עבודה</td><td class="num ils">0.03</td><td>≈10 הודעות קצרות לעבודה, $1/M קלט, $5/M פלט</td></tr>
+<tr><td>Prompt caching על הוראות המערכת</td><td>כולם</td><td class="num">−</td><td class="num ils">−</td><td>הוראות המערכת (≈1.2K טוקנים) נשמרות במטמון; מוריד כ‑20% מעלות הקלט. כלול בהערכה.</td></tr>
+</table></div>
+
+<h3>5.3 ייצור תמונה</h3>
+<div class="tablewrap"><table>
+<tr><th>מודל</th><th>ספק</th><th class="num">USD / תמונה</th><th class="num">₪</th><th>מתי</th></tr>
+<tr class="rec"><td>Nano Banana Pro (Gemini 3 Pro Image), 1K–2K</td><td>Google Gemini API</td><td class="num">0.134</td><td class="num ils">0.45</td><td>ברירת מחדל. הכי טוב בשמירה על המוצר המקורי ובעריכה לפי רפרנס.</td></tr>
+<tr><td>Nano Banana Pro, 4K</td><td>Google</td><td class="num">0.24</td><td class="num ils">0.80</td><td>הדפסה או שלטי חוצות בלבד.</td></tr>
+<tr><td>Nano Banana (Gemini 3.1 Flash Image), 1K</td><td>Google</td><td class="num">0.067</td><td class="num ils">0.22</td><td>גרסאות סקיצה מהירות, או כשמייצרים רק רקע והטקסט בקוד.</td></tr>
+<tr><td>Gemini 3.1 Flash Lite Image, 1K</td><td>Google</td><td class="num">0.034</td><td class="num ils">0.11</td><td>הכי זול, איכות בסיסית.</td></tr>
+<tr><td>GPT Image 2, איכות medium, 1024²</td><td>OpenAI</td><td class="num">0.053</td><td class="num ils">0.18</td><td>מודל גיבוי. טוב בטיפוגרפיה לטינית.</td></tr>
+<tr><td>GPT Image 2, איכות high</td><td>OpenAI</td><td class="num">0.211</td><td class="num ils">0.71</td><td>יקר, לא נדרש כאן.</td></tr>
+<tr><td>FLUX 2 Pro</td><td>fal.ai / BFL</td><td class="num">≈ 0.02–0.03</td><td class="num ils">≈ 0.08</td><td>זול לרקעים גנריים, פחות טוב בעריכת מוצר קיים.</td></tr>
+<tr><td>Outpaint לפורמט 9:16 (FLUX 2 Pro Outpaint)</td><td>fal.ai / Higgsfield</td><td class="num">≈ 0.03–0.05</td><td class="num ils">≈ 0.13</td><td>הרחבת התמונה המנצחת לסטורי במקום ייצור מחדש.</td></tr>
+<tr><td>Batch API (Google / OpenAI), הנחה של 50%</td><td>−</td><td class="num">−</td><td class="num ils">−</td><td>לא רלוונטי לזרימה בזמן אמת, כן רלוונטי לייצור מלאי מראש.</td></tr>
+</table></div>
+
+<h3>5.4 ייצור סרטון (תמונה‑לסרטון)</h3>
+<div class="tablewrap"><table>
+<tr><th>מודל</th><th class="num">USD / שנייה</th><th class="num">5 שנ׳ ₪</th><th class="num">10 שנ׳ ₪</th><th>הערות</th></tr>
+<tr><td>Kling v3 Standard, בלי אודיו</td><td class="num">0.084</td><td class="num ils">1.41</td><td class="num ils">2.81</td><td>fal.ai</td></tr>
+<tr class="rec"><td>Kling v3 Standard, עם אודיו</td><td class="num">0.126</td><td class="num ils">2.11</td><td class="num ils">4.22</td><td>ברירת מחדל. יחס איכות‑מחיר הטוב ביותר לרילס.</td></tr>
+<tr><td>Kling v3 Pro, עם אודיו</td><td class="num">0.168</td><td class="num ils">2.81</td><td class="num ils">5.63</td><td>תנועה חלקה יותר, לחבילה "פרימיום".</td></tr>
+<tr><td>Kling v3 Pro, אודיו + שליטה קולית</td><td class="num">0.196</td><td class="num ils">3.28</td><td class="num ils">6.57</td><td>קריינות מסונכרנת, שלב 2.</td></tr>
+<tr><td>Veo 3.1 Fast (fal.ai)</td><td class="num">≈ 0.15</td><td class="num ils">≈ 4.0 (8 שנ׳)</td><td class="num ils">−</td><td>קליפים של 8 שניות, ריאליזם גבוה, יקר פי 2.</td></tr>
+<tr><td>Veo 3.1 Standard, אודיו ו‑4K</td><td class="num">≈ 0.40–0.75</td><td class="num ils">≈ 13–25 (8 שנ׳)</td><td class="num ils">−</td><td>לא מתאים ל‑98 ₪.</td></tr>
+<tr><td>Seedance / Wan (מודלי גיבוי זולים)</td><td class="num">≈ 0.03–0.06</td><td class="num ils">≈ 0.5–1.0</td><td class="num ils">≈ 1–2</td><td>גיבוי כשספק ראשי נופל, או חבילת בסיס.</td></tr>
+</table></div>
+
+<h3>5.5 חלופה: Higgsfield כפלטפורמה אחת (מנוי במקום תשלום לפי שימוש)</h3>
+<p>Higgsfield מאגד מודלי תמונה וסרטון (כולל Nano Banana, GPT Image, Kling, Seedance) תחת קרדיטים, ויש לו "Marketing Studio" שמייצר מודעת מוצר בקליק, כולל סרטון 12–15 שניות. יתרון: API אחד ומחיר קבוע לחודש. חיסרון: פחות שליטה על הפרמטרים, ואי אפשר לצייר טקסט עברי בקוד באמצע התהליך, אלא רק אחרי.</p>
+<div class="tablewrap"><table>
+<tr><th>תוכנית</th><th class="num">USD</th><th class="num">₪</th><th class="num">$ לקרדיט</th><th>מה מקבלים</th></tr>
+<tr><td>Ultra, חיוב שנתי</td><td class="num">99 / חודש</td><td class="num ils">332</td><td class="num">0.033</td><td>3,000 קרדיטים בחודש: לפי הספק ≈500 סרטוני Kling 3.0 או ≈12,000 תמונות זולות, כלומר ≈0.20 $ לסרטון.</td></tr>
+<tr><td>טעינה חד‑פעמית 4,000 קרדיטים</td><td class="num">190</td><td class="num ils">637</td><td class="num">0.0475</td><td>תקף 90 יום. יקר ב‑45% מהמנוי לקרדיט.</td></tr>
+<tr><td>טעינה חד‑פעמית 1,000 קרדיטים</td><td class="num">49</td><td class="num ils">164</td><td class="num">0.049</td><td>לניסוי ראשוני.</td></tr>
+<tr><td>מילוי אוטומטי</td><td class="num">18 קרדיטים / $</td><td class="num ils">−</td><td class="num">0.056</td><td>הכי יקר לקרדיט.</td></tr>
+</table></div>
+<div class="note">המסקנה: בפחות מ‑60 מודעות בחודש, תשלום לפי שימוש (Gemini + fal.ai) זול יותר וגמיש יותר. מעל 100 מודעות בחודש, מנוי Ultra של Higgsfield יכול להוריד את עלות הסרטון ב‑60%, ואפשר לשלב: תמונות ב‑Gemini, סרטונים בקרדיטים. מספר הקרדיטים לכל ייצור משתנה לפי מודל ורזולוציה, ולכן צריך לבדוק ב‑<code>balance</code> אחרי 10 ייצורים ראשונים לפני שמסתמכים על זה.</div>
+
+<h3>5.6 תשתית, סליקה ומע״מ</h3>
+<div class="tablewrap"><table>
+<tr><th>פריט</th><th class="num">₪ / חודש</th><th>הערות</th></tr>
+<tr><td>שרת (Railway / Render / Hetzner קטן) + Redis</td><td class="num ils">25–60</td><td>מספיק ל‑300 מודעות בחודש. העבודה הכבדה נעשית אצל הספקים.</td></tr>
+<tr><td>Postgres (Supabase, תוכנית חינמית → Pro)</td><td class="num ils">0–85</td><td>חינם עד 500MB; ב‑Pro $25.</td></tr>
+<tr><td>אחסון קבצים (Cloudflare R2)</td><td class="num ils">0–10</td><td>10GB חינם, ואין עלות תעבורה יוצאת. סרטון ≈8MB, תמונה ≈1MB.</td></tr>
+<tr><td>דומיין + אימייל</td><td class="num ils">≈ 10</td><td>נדרש לאימות Webhook ולעסק במטא.</td></tr>
+<tr class="total"><td>סה״כ תשתית קבועה</td><td class="num ils">≈ 50–120</td><td>ללא ספק ביניים לוואטסאפ.</td></tr>
+<tr><td>סליקה (ביט לעסקים / Grow / PayPlus וכדומה)</td><td class="num ils">≈ 1.2%–2.5% + 0.5–1 ₪ לעסקה</td><td><span class="pill money">הערכה</span> על 98 ₪ ≈ 2–3 ₪. חלק מהספקים גובים גם דמי מנוי חודשיים. השווה לפני שבוחרים.</td></tr>
+<tr><td>מע״מ 18%</td><td class="num ils">15 ₪ מתוך 98</td><td>אם אתה עוסק מורשה, 98 ₪ כולל מע״מ = 83.05 ₪ נטו. עוסק פטור לא גובה מע״מ ושומר את כל ה‑98 ₪ (עד תקרת המחזור).</td></tr>
+</table></div>
+
+<h2 id="unit">6. כלכלת יחידה: מודעה אחת</h2>
+<p>החבילה הבסיסית: 3 גרסאות תמונה, 2 פורמטים, סרטון 5 שניות עם אודיו, סבב תיקונים אחד. העלויות כוללות מרווח של 30% לתיקונים ולניסיונות שנכשלו.</p>
+<div class="tablewrap"><table>
+<tr><th>רכיב</th><th class="num">USD</th><th class="num">₪</th><th>פירוט</th></tr>
+<tr><td>Claude Opus 5 + Haiku 4.5</td><td class="num">0.055</td><td class="num ils">0.18</td><td>בריף אחד + ניתוב + דירוג</td></tr>
+<tr><td>3 תמונות Nano Banana Pro 2K</td><td class="num">0.402</td><td class="num ils">1.35</td><td>3 × 0.134</td></tr>
+<tr><td>Outpaint לפורמט 9:16</td><td class="num">0.04</td><td class="num ils">0.13</td><td>קריאה אחת</td></tr>
+<tr><td>סרטון Kling v3 Standard 5 שנ׳ עם אודיו</td><td class="num">0.63</td><td class="num ils">2.11</td><td>5 × 0.126</td></tr>
+<tr><td>וואטסאפ</td><td class="num">0–0.005</td><td class="num ils">0–0.02</td><td>בתוך חלון שירות: חינם</td></tr>
+<tr><td>מרווח תיקונים וכשלים 30%</td><td class="num">0.34</td><td class="num ils">1.13</td><td>עוד גרסה אחת בממוצע</td></tr>
+<tr><td>תשתית מחולקת (100 ₪ ÷ 50 מודעות)</td><td class="num">−</td><td class="num ils">2.00</td><td>יורד ככל שהנפח עולה</td></tr>
+<tr class="total"><td>סה״כ עלות ייצור למודעה</td><td class="num">≈ 1.5</td><td class="num ils">≈ 6.9</td><td>מעוגל בטבלה למעלה ל‑6 ₪ בלי החלק הקבוע</td></tr>
+</table></div>
+
+<h3>איך 98 ₪ מתחלקים (עוסק מורשה)</h3>
+<div class="bar" aria-label="פילוח 98 שקל">
+  <div style="width:15.3%;background:#8A94A6">מע״מ 15</div>
+  <div style="width:2.6%;background:#B7791F" title="סליקה 2.5"></div>
+  <div style="width:7%;background:#3F7F63">AI 6.9</div>
+  <div style="width:75.1%;background:#1E8A5A">נטו לך ≈ 73.6 ₪</div>
+</div>
+<div class="legend"><span><i style="background:#8A94A6"></i>מע״מ 15.0 ₪</span><span><i style="background:#B7791F"></i>סליקה ≈ 2.5 ₪</span><span><i style="background:#3F7F63"></i>AI ותשתית 6.9 ₪</span><span><i style="background:#1E8A5A"></i>נטו ≈ 73.6 ₪ (75%)</span></div>
+<p class="small">עוסק פטור: ללא מע״מ, נטו ≈ 88.6 ₪ למודעה. לא כלול: זמן העבודה שלך (≈10–15 דקות למודעה בבקרה ומסירה) ועלות רכישת לקוח.</p>
+
+<h3>תרחישים חודשיים</h3>
+<div class="tablewrap"><table>
+<tr><th>מודעות בחודש</th><th class="num">הכנסה ₪</th><th class="num">מע״מ ₪</th><th class="num">AI משתנה ₪</th><th class="num">סליקה ₪</th><th class="num">תשתית ₪</th><th class="num">נטו ₪</th><th class="num">נטו למודעה</th></tr>
+<tr><td>20 (התחלה)</td><td class="num">1,960</td><td class="num">299</td><td class="num">98</td><td class="num">50</td><td class="num">100</td><td class="num ils">≈ 1,410</td><td class="num">70</td></tr>
+<tr><td>50 (יעד חודש 3)</td><td class="num">4,900</td><td class="num">747</td><td class="num">245</td><td class="num">125</td><td class="num">100</td><td class="num ils">≈ 3,680</td><td class="num">74</td></tr>
+<tr><td>150 (עם מוכר נוסף או בוט ישיר)</td><td class="num">14,700</td><td class="num">2,242</td><td class="num">735</td><td class="num">375</td><td class="num">300</td><td class="num ils">≈ 11,050</td><td class="num">74</td></tr>
+</table></div>
+<div class="note"><b>המסקנה העסקית:</b> העלות הטכנולוגית היא כ‑7% מהמחיר. הרווחיות לא נקבעת על ידי מחירי ה‑API אלא על ידי כמה מודעות אתה מוכר בחודש וכמה זמן לוקח לך סבב תיקונים. לכן האיפיון משקיע בפקודות שחוסכות ייצור מחדש (החלפת טקסט חינם) יותר מאשר בבחירת המודל הזול ביותר.</div>
+
+<h2 id="packages">7. חבילות מוצר מוצעות</h2>
+<div class="two">
+  <div class="box"><div class="tag">בסיס</div><h4>98 ₪ · מודעה מוכנה</h4><p>תמונת מודעה ב‑2 פורמטים + סרטון 5 שניות + כיתוב לפוסט. סבב תיקונים אחד. עלות לך ≈ 7 ₪.</p></div>
+  <div class="box"><div class="tag">פלוס</div><h4>149 ₪ · מודעה + וריאציות</h4><p>3 תמונות סופיות שונות (A/B), סרטון 10 שניות ב‑Kling Pro, 2 סבבי תיקונים. עלות לך ≈ 13 ₪.</p></div>
+  <div class="box"><div class="tag">מנוי</div><h4>390 ₪ לחודש · 5 מודעות</h4><p>78 ₪ למודעה, כרטיס לקוח קבוע עם לוגו וצבעים, תור מועדף. מייצר הכנסה חוזרת וזה מה שבונה את העסק.</p></div>
+  <div class="box"><div class="tag">תוספות</div><h4>+30 ₪ פורמט נוסף · +60 ₪ סרטון נוסף</h4><p>עלות שולית לך: פורמט ≈ 0.5 ₪, סרטון ≈ 2–3 ₪. שולי הרווח בתוספות כמעט מלאים.</p></div>
+</div>
+
+<h2 id="risks">8. סיכונים והחלטות פתוחות</h2>
+<div class="tablewrap"><table>
+<tr><th>סיכון</th><th>חומרה</th><th>מה עושים</th></tr>
+<tr><td>עברית שגויה בתמונה</td><td><span class="pill warn">גבוהה</span></td><td>הטקסט מצויר בקוד ולא על ידי המודל (סעיף 3.4). זה גם מוריד עלויות.</td></tr>
+<tr><td>חסימת מספר וואטסאפ</td><td><span class="pill warn">גבוהה</span></td><td>רק Cloud API רשמי. מספר ייעודי לבוט, לא המספר הפרטי שלך. אימות עסק במטא כבר בחודש הראשון.</td></tr>
+<tr><td>ספק AI משנה מחיר או מודל</td><td><span class="pill">בינונית</span></td><td>שכבת הפשטה: כל ספק מאחורי ממשק אחד, מחירים בקובץ קונפיגורציה, רישום עלות בפועל לכל קריאה.</td></tr>
+<tr><td>זכויות יוצרים על תמונות המוצר</td><td><span class="pill">בינונית</span></td><td>הצהרת לקוח בתחילת העבודה. אין שימוש בתמונות מהאינטרנט.</td></tr>
+<tr><td>לקוח לא מרוצה אחרי סבב תיקונים</td><td><span class="pill">בינונית</span></td><td>מדיניות: סבב שני ב‑30 ₪, או החזר מלא. העלות שלך למודעה כשלה היא ≈ 10 ₪, לא שווה ויכוח.</td></tr>
+<tr><td>זמן ייצור ארוך בשעות עומס</td><td><span class="pill">נמוכה</span></td><td>הבטחת מסירה "עד סוף היום", לא "תוך 5 דקות". מה שמהיר זה בונוס.</td></tr>
+<tr><td>מע״מ ותקרת עוסק פטור</td><td><span class="pill">נמוכה</span></td><td>ב‑50 מודעות בחודש עוברים את התקרה תוך שנה. לתכנן מעבר לעוסק מורשה מראש.</td></tr>
+</table></div>
+<h3>החלטות שצריך לקבל לפני הפיתוח</h3>
+<ol>
+  <li><b>מספר וואטסאפ:</b> מספר SIM חדש ייעודי או מספר וירטואלי? מטא דורשת מספר שיכול לקבל SMS או שיחה לאימות.</li>
+  <li><b>שם המותג:</b> "מודעה ב‑98" הוא שם עבודה. השם מופיע בפרופיל העסקי ובכל מסירה.</li>
+  <li><b>סליקה:</b> ביט לעסקים (זול, מוכר לקהל) לעומת קישור תשלום (מסודר, חשבונית אוטומטית).</li>
+  <li><b>מדיניות סבב תיקונים:</b> אחד כלול. כמה עולה השני, וכמה גרסאות מקסימום.</li>
+</ol>
+
+<h2 id="plan">9. תוכנית פיתוח</h2>
+<div class="tablewrap"><table>
+<tr><th>שלב</th><th>משך</th><th>מה נבנה</th><th>איך יודעים שהצליח</th></tr>
+<tr><td>0 · הכנות</td><td>2–3 ימים</td><td>חשבון Meta Business + אפליקציה + מספר, מפתחות API ל‑Anthropic, Google, fal.ai; חשבון סליקה; ריפו זה.</td><td>הודעת "שלום" נשלחת ומתקבלת דרך Cloud API.</td></tr>
+<tr><td>1 · צינור ידני</td><td>שבוע</td><td>Webhook, תור, קריאת Claude עם פלט מובנה, 3 תמונות, שכבת טקסט ב‑Sharp, שליחה חזרה. בלי סרטון.</td><td>10 מודעות אמיתיות ל‑5 לקוחות ראשונים, במחיר מבצע 69 ₪.</td></tr>
+<tr><td>2 · סרטון ופורמטים</td><td>שבוע</td><td>Kling דרך fal.ai, כתוביות ב‑ffmpeg, outpaint ל‑9:16, פקודות תיקון, רישום עלויות.</td><td>עלות ממוצעת למודעה מתחת ל‑8 ₪ ב‑20 מודעות.</td></tr>
+<tr><td>3 · כרטיסי לקוח ומנוי</td><td>שבוע</td><td>ברנד‑קיט לכל לקוח, ארכיון, דשבורד פשוט, תבניות utility מאושרות במטא.</td><td>3 לקוחות במנוי חודשי.</td></tr>
+<tr><td>4 · בוט ישיר ללקוח</td><td>2 שבועות</td><td>הלקוח מדבר עם הבוט בעצמו, אתה מאשר לפני מסירה. תשלום בקישור בתוך השיחה.</td><td>מודעה שלמה בלי מגע שלך עד שלב האישור.</td></tr>
+</table></div>
+<h3>מחסנית טכנולוגית</h3>
+<ul>
+  <li><b>שפה:</b> TypeScript על Node.js 22. SDKs רשמיים: <code>@anthropic-ai/sdk</code>, <code>@google/genai</code>, <code>@fal-ai/client</code>.</li>
+  <li><b>שרת:</b> Fastify, תור BullMQ, Redis. פריסה ב‑Railway או Render מדוקר אחד.</li>
+  <li><b>מדיה:</b> Sharp לטקסט ולוגו, ffmpeg לכתוביות ולדחיסה, פונטים Heebo ו‑Assistant מ‑Google Fonts מוטמעים בשרת.</li>
+  <li><b>נתונים:</b> Postgres ב‑Supabase עם Drizzle ORM, קבצים ב‑Cloudflare R2.</li>
+  <li><b>ניטור:</b> Sentry לשגיאות, טבלת api_calls לעלויות, התראה בוואטסאפ למפעיל כשעלות מודעה עוברת 15 ₪.</li>
+</ul>
+
+<h2 id="sources">10. מקורות למחירים</h2>
+<p class="src">תעריפי וואטסאפ לישראל (0.0353 $ marketing, 0.0053 $ utility) ומודל החיוב לפי הודעה: <a href="https://www.go4whatsup.com/guides/meta-whatsapp-pricing/">Meta WhatsApp Pricing by Country</a>, <a href="https://whautomate.com/whatsapp-business-api-pricing">WhatsApp API Pricing 2026</a>, <a href="https://sleekflow.io/blog/whatsapp-business-price">SleekFlow pricing guide</a>. ספקי ביניים: <a href="https://www.kommunicate.io/blog/twilio-vs-360dialog-a-comparison/">Twilio vs 360dialog</a>. סיכון API לא רשמי: <a href="https://wapisimo.dev/blog/en/whatsapp-unofficial-api-ban-risk">Unofficial API ban risk</a>.</p>
+<p class="src">Anthropic: תעריפי Opus 5 ($5/$25), Sonnet 5 ($2/$10), Haiku 4.5 ($1/$5) למיליון טוקנים, לפי מחירון ה‑API הרשמי. תמונה: <a href="https://www.aifreeapi.com/en/posts/nano-banana-pro-pricing">Nano Banana Pro API pricing</a>, <a href="https://developer.puter.com/tutorials/gemini-api-pricing/">Gemini API pricing</a>, <a href="https://unifically.com/blogs/gpt-image-2">GPT Image 2 pricing</a>, <a href="https://www.atlascloud.ai/blog/guides/cheapest-ai-image-generation-api-2026">Cheapest image APIs 2026</a>. סרטון: <a href="https://fal.ai/models/fal-ai/kling-video/v3/standard/image-to-video">Kling v3 Standard on fal</a>, <a href="https://fal.ai/models/fal-ai/kling-video/v3/pro/image-to-video">Kling v3 Pro on fal</a>, <a href="https://modelslab.com/blog/api/veo-3-1-vs-kling-3-sora-2-ai-video-api-cost-2026">Veo 3.1 vs Kling 3.0 vs Sora 2</a>. Higgsfield: נתוני התוכניות והטעינות נלקחו ישירות מכלי התמחור של הפלטפורמה בזמן כתיבת המסמך.</p>
+<p class="small">עלויות תשתית וסליקה הן הערכות לפי מחירונים ציבוריים של הספקים המוזכרים ולא נבדקו מול הצעת מחיר. מע״מ 18% לפי השיעור בישראל מינואר 2025.</p>
+</main>
+</div>
