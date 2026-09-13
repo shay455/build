@@ -119,7 +119,7 @@ async function handleText(text: string) {
       if (job.status === "awaiting_approval" || job.status === "failed") {
         if (!job.copy) { await enqueue({ step: "brief", jobId: job.id }); return sendText(op, "מנסה שוב לכתוב קופי…"); }
         await enqueue({ step: "generate", jobId: job.id });
-        return sendText(op, `מייצר 3 גרסאות תמונה לעבודה #${job.id}. זה לוקח כדקה.`);
+        return sendText(op, `מייצר 2 קונספטים לעבודה #${job.id}, כל אחד בפיד ובסטורי. בערך דקה.`);
       }
       return sendText(op, `עבודה #${job.id} כרגע: ${STATUS_HE[job.status]}. אין מה לאשר.`);
 
@@ -135,28 +135,32 @@ async function handleText(text: string) {
     }
 
     case "choose": {
-      if (!job.variants[cmd.index]) return sendText(op, `אין גרסה ${cmd.index + 1}. יש ${job.variants.length} גרסאות.`);
+      const v = job.variants[cmd.index];
+      if (!v) return sendText(op, `אין קונספט ${cmd.index + 1}. יש ${job.variants.length}.`);
       await db.update(schema.jobs).set({ chosenVariant: cmd.index, updatedAt: new Date() }).where(eq(schema.jobs.id, job.id));
-      await enqueue({ step: "render", jobId: job.id });
-      return sendText(op, `נבחרה גרסה ${cmd.index + 1}. מרנדר פורמטים…`);
+      return sendText(op, `סומן: קונספט ${cmd.index + 1} (${v.label}). "סרטון" יאנים אותו, "סיום" סוגר.`);
     }
 
     case "more_variant":
       if (!job.copy) return sendText(op, "קודם צריך קופי מאושר.");
-      if (job.revisionRounds >= 3) await sendText(op, `שים לב: זו גרסה נוספת מספר ${job.revisionRounds + 1} בעבודה הזו.`);
+      if (job.status === "generating") return sendText(op, "העבודה עדיין מייצרת. חכה לסיום.");
+      if (job.revisionRounds >= 2) await sendText(op, `שים לב: זו גרסה נוספת מספר ${job.revisionRounds + 1} בעבודה הזו (מעבר לסבב הכלול).`);
       await enqueue({ step: "variant", jobId: job.id });
       return sendText(op, "מייצר גרסה נוספת…");
 
-    case "no_video":
-      await db.update(schema.jobs).set({ wantsVideo: false }).where(eq(schema.jobs.id, job.id));
-      return sendText(op, "סומן: בלי סרטון. (ייצור סרטון נכנס בשלב 2.)");
-    case "video_only":
-      return sendText(op, "ייצור סרטון נכנס בשלב 2. בינתיים העבודה ממשיכה עם תמונות.");
+    case "video": {
+      if (!config().FAL_KEY) return sendText(op, "כדי לייצר סרטון צריך להוסיף FAL_KEY לקובץ .env (חשבון ב‑fal.ai).");
+      if (!job.variants.length) return sendText(op, "עדיין אין תמונה להנפיש. קודם \"אישור\".");
+      if (job.status === "generating") return sendText(op, "העבודה עדיין מייצרת. חכה לסיום ואז \"סרטון\".");
+      await enqueue({ step: "video", jobId: job.id, seconds: cmd.seconds });
+      return;
+    }
 
     case "finish": {
       const cost = await jobCostUsd(job.id);
       await db.update(schema.jobs).set({ status: "done", updatedAt: new Date() }).where(eq(schema.jobs.id, job.id));
-      return sendText(op, `עבודה #${job.id} נסגרה.\nעלות בפועל: $${cost.toFixed(3)} ≈ ₪${usdToIls(cost).toFixed(2)}\nהקבצים בתיקייה data/jobs/${job.id}.`);
+      const n = job.outputs?.renders.length ?? 0;
+      return sendText(op, `עבודה #${job.id} נסגרה. ${n} קונספטים${job.videoPath ? " + סרטון" : ""}.\nעלות בפועל: $${cost.toFixed(3)} ≈ ₪${usdToIls(cost).toFixed(2)}\nהקבצים בתיקייה data/jobs/${job.id}.`);
     }
 
     case "unknown":

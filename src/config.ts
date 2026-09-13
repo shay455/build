@@ -13,6 +13,8 @@ const Env = z.object({
   GEMINI_IMAGE_MODEL: z.string().default("gemini-3-pro-image"),
   CLAUDE_BRIEF_MODEL: z.string().default("claude-opus-5"),
   CLAUDE_UTILITY_MODEL: z.string().default("claude-haiku-4-5"),
+  FAL_KEY: z.string().optional(),
+  FAL_VIDEO_MODEL: z.string().default("fal-ai/kling-video/v3/standard/image-to-video"),
 
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().default("redis://localhost:6379"),

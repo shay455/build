@@ -14,15 +14,12 @@ export interface GenerateInput {
   references: Array<{ data: Buffer; mime: string }>;
   aspectRatio?: AspectRatio;
   size?: ImageSize;
-  /** Small prompt suffix that makes each variant differ (angle, surface, light). */
-  variation?: string;
 }
 
-/** One image from Nano Banana Pro, editing the supplied product photo(s). Returns PNG/JPEG bytes as sent by Google. */
+/** One image from Nano Banana Pro, editing the supplied product photo(s). */
 export async function generateImage(input: GenerateInput): Promise<{ data: Buffer; mime: string }> {
   const c = config();
   const size = input.size ?? "2K";
-  const prompt = input.variation ? `${input.prompt}\nVariation: ${input.variation}` : input.prompt;
 
   const response = await ai.models.generateContent({
     model: c.GEMINI_IMAGE_MODEL,
@@ -31,7 +28,7 @@ export async function generateImage(input: GenerateInput): Promise<{ data: Buffe
         role: "user",
         parts: [
           ...input.references.map((r) => ({ inlineData: { mimeType: r.mime, data: r.data.toString("base64") } })),
-          { text: prompt },
+          { text: input.prompt },
         ],
       },
     ],
@@ -53,22 +50,10 @@ export async function generateImage(input: GenerateInput): Promise<{ data: Buffe
   return { data: Buffer.from(img.inlineData.data, "base64"), mime: img.inlineData.mimeType ?? "image/png" };
 }
 
-const VARIATIONS = [
-  "hero composition, product centered, straight-on camera",
-  "three-quarter angle, product slightly off-center, more environment visible",
-  "close-up with dramatic side light and shallow depth of field",
-  "top-down flat lay on a complementary surface",
-  "product on a plain seamless backdrop in the palette's primary color, studio light",
+/** Suffixes for "עוד גרסה": push an existing concept somewhere new without rewriting the brief. */
+export const EXTRA_VARIATIONS = [
+  "Change the camera to a low three-quarter angle and use warm late-afternoon light.",
+  "Top-down flat lay, cooler daylight, more empty surface around the product.",
+  "Tight close-up with shallow depth of field and a single dramatic side light.",
+  "Wider shot with more environment visible, soft overcast light.",
 ];
-
-/** N variants in parallel. Failures of individual variants are logged and dropped; at least one must succeed. */
-export async function generateVariants(base: Omit<GenerateInput, "variation">, count = 3, offset = 0) {
-  const settled = await Promise.allSettled(
-    Array.from({ length: count }, (_, i) => generateImage({ ...base, variation: VARIATIONS[(i + offset) % VARIATIONS.length] })),
-  );
-  const ok = settled.flatMap((s) => (s.status === "fulfilled" ? [s.value] : []));
-  const failed = settled.filter((s) => s.status === "rejected") as PromiseRejectedResult[];
-  for (const f of failed) log.warn({ err: f.reason }, "variant failed");
-  if (ok.length === 0) throw new Error(`All ${count} image variants failed: ${String(failed[0]?.reason)}`);
-  return ok;
-}

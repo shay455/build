@@ -18,6 +18,11 @@ export const PRICES = {
     "gemini-3-pro-image": { "1K": 0.134, "2K": 0.134, "4K": 0.24 },
     "gemini-3.1-flash-image": { "1K": 0.067, "2K": 0.134, "4K": 0.151 },
   } as Record<string, Record<string, number>>,
+  fal: {
+    // per second of output video, audio on
+    "fal-ai/kling-video/v3/standard/image-to-video": 0.126,
+    "fal-ai/kling-video/v3/pro/image-to-video": 0.168,
+  } as Record<string, number>,
   whatsapp: { service: 0, utilityIL: 0.0053, marketingIL: 0.0353 },
 };
 
@@ -46,6 +51,13 @@ export async function recordImageCall(jobId: number | null, model: string, actio
   await db.insert(schema.apiCalls).values({
     jobId, provider: "gemini", model, action, units: String(units),
     costUsd: (geminiImageCostUsd(model, size) * units).toFixed(6),
+  });
+}
+
+export async function recordVideoCall(jobId: number | null, model: string, seconds: number) {
+  await db.insert(schema.apiCalls).values({
+    jobId, provider: "fal", model, action: "video", units: String(seconds),
+    costUsd: ((PRICES.fal[model] ?? 0) * seconds).toFixed(6),
   });
 }
 

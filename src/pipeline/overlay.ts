@@ -27,7 +27,7 @@ export const FORMAT_SIZE: Record<Format, { w: number; h: number }> = {
 
 export interface OverlayInput {
   image: Buffer;
-  copy: Pick<AdCopy, "headline" | "subline" | "cta" | "palette" | "text_zone">;
+  copy: Pick<AdCopy, "headline" | "subline" | "cta" | "palette"> & { text_zone: "top" | "bottom" };
   logo?: Buffer | null;
   format: Format;
 }

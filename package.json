@@ -4,7 +4,9 @@
   "private": true,
   "description": "WhatsApp bot that turns a product photo + brief into ready-to-post ad creatives",
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
@@ -17,6 +19,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
+    "@fal-ai/client": "^1.10.1",
     "@google/genai": "^2.22.0",
     "@napi-rs/canvas": "^1.0.9",
     "bullmq": "^6.3.4",

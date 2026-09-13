@@ -1,5 +1,5 @@
 /**
- * Parses operator messages (Hebrew) into commands. Kept deterministic on purpose:
+ * Parses operator messages (Hebrew) into commands. Deterministic on purpose:
  * no model call for routing, so a typo never costs money and the behaviour is testable.
  */
 export type Command =
@@ -8,8 +8,7 @@ export type Command =
   | { type: "set_copy"; field: "headline" | "subline" | "cta"; value: string }
   | { type: "choose"; index: number }
   | { type: "more_variant" }
-  | { type: "no_video" }
-  | { type: "video_only" }
+  | { type: "video"; seconds: 5 | 10 }
   | { type: "finish" }
   | { type: "costs" }
   | { type: "status" }
@@ -38,11 +37,12 @@ export function parseCommand(raw: string): Command {
   const choose = /^(?:בחר\s*)?([1-9])$/u.exec(text);
   if (choose) return { type: "choose", index: Number(choose[1]) - 1 };
 
+  const video = /^סרטון(?:\s*(5|10))?$/u.exec(text);
+  if (video) return { type: "video", seconds: video[1] === "10" ? 10 : 5 };
+
   const t = text.replace(/[.!]/g, "");
   if (/^(אישור|מאשר|אשר|ok|אוקי|יאללה)$/iu.test(t)) return { type: "approve" };
-  if (/^עוד\s*(גרסה|גירסה|אחת|אחד)?$/u.test(t)) return { type: "more_variant" };
-  if (/^בלי\s*סרטון$/u.test(t)) return { type: "no_video" };
-  if (/^רק\s*סרטון$/u.test(t)) return { type: "video_only" };
+  if (/^עוד\s*(גרסה|גירסה|אחת|אחד|תמונה)?$/u.test(t)) return { type: "more_variant" };
   if (/^(סיום|סיים|סגור)$/u.test(t)) return { type: "finish" };
   if (/^(עלויות|עלות|כמה עלה)$/u.test(t)) return { type: "costs" };
   if (/^(סטטוס|מצב|איפה זה)$/u.test(t)) return { type: "status" };
@@ -55,11 +55,11 @@ export const HELP = `פקודות:
   לקוח: שם העסק
   הטקסט למודעה (מה לכתוב, מחיר, קריאה לפעולה)
   אפשר להוסיף שורה "סגנון: יוקרתי / חם / נקי / צעיר / חגיגי"
-• אישור – מאשר את הקופי ומתחיל ייצור
+• אישור – מאשר את הקופי ומייצר 2 קונספטים שונים, כל אחד בפיד ובסטורי
 • כותרת: … / משפט: … / כפתור: … – מחליף טקסט (חינם, בלי ייצור מחדש)
-• בחר 2 – בוחר גרסת תמונה אחרת
-• עוד גרסה – מייצר תמונה נוספת
-• בלי סרטון – מדלג על סרטון (שלב 2)
+• עוד גרסה – תמונה נוספת
+• בחר 2 – מסמן את הקונספט שהלקוח בחר (זה שילך לסרטון)
+• סרטון / סרטון 10 – סרטון 5 או 10 שניות מהקונספט שנבחר (רק כשמבקשים)
 • סטטוס – איפה העבודה הנוכחית
 • עלויות – סיכום עלויות החודש
 • סיום – סוגר את העבודה ומציג עלות בפועל`;

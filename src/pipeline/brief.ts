@@ -14,8 +14,11 @@ export const AdCopySchema = z.object({
     primary: z.string().describe("hex color for backgrounds/text panels, e.g. #3B2A1E"),
     accent: z.string().describe("hex color for the CTA button, must contrast with primary"),
   }),
-  text_zone: z.enum(["top", "bottom"]).describe("where the generated image leaves empty space for typography"),
-  image_prompt: z.string().describe("English prompt for an image model editing the provided product photo. Must end with: 'no text, no letters, no watermark'"),
+  concepts: z.array(z.object({
+    label: z.string().describe("Short Hebrew name for this concept shown to the operator, e.g. סטודיו נקי / סצנה ביתית"),
+    text_zone: z.enum(["top", "bottom"]).describe("where this image leaves empty space for typography"),
+    image_prompt: z.string().describe("English prompt for an image model editing the provided product photo. Must end with: 'no text, no letters, no watermark'"),
+  })).length(2).describe("Two visually opposite concepts so the client has a real choice"),
   video_prompt: z.string().describe("English prompt for a 5s image-to-video model (camera move, light, motion). Stored for phase 2."),
   style_rationale: z.string().describe("One Hebrew sentence explaining the creative direction to the operator"),
   flags: z.array(z.string()).describe("Hebrew warnings: medical claims, financial promises, alcohol, minors, named competitors. Empty if none."),
@@ -32,9 +35,10 @@ Rules for the Hebrew copy:
 - Headline max 6 words. Subline max 12 words. CTA max 4 words.
 - Do not invent facts (ingredients, awards, years in business) that the brief does not state.
 
-Rules for image_prompt (English):
+Rules for the two concepts (English prompts):
+- Produce exactly TWO concepts that look nothing alike. Concept 1 is a clean studio hero: product on a seamless or minimal surface, one dominant color from the palette, controlled light. Concept 2 is a lifestyle scene: the product in its real-world context (table, hands, shop, street, home), natural light, visible environment. They must also differ in camera angle and mood.
 - The image model EDITS the supplied product photo. Describe scene, surface, lighting, mood and composition around the real product. Never ask it to change, redraw or replace the product itself.
-- Leave clear negative space in the ${"text_zone"} third of the frame for typography. Say so explicitly.
+- Leave clear negative space in the top or bottom third of the frame for typography (state which, and set text_zone to match).
 - Never request rendered text. End the prompt with: no text, no letters, no watermark.
 - Keep people who appear in the photo exactly as they are; do not add new people.
 

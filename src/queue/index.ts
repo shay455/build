@@ -1,23 +1,26 @@
 import { Queue, Worker, type Job } from "bullmq";
 import { Redis } from "ioredis";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import sharp from "sharp";
 import { config } from "../config.js";
 import { db, schema } from "../db/index.js";
 import { log } from "../logger.js";
 import { buildBrief } from "../pipeline/brief.js";
-import { generateVariants } from "../pipeline/images.js";
+import { EXTRA_VARIATIONS, generateImage } from "../pipeline/images.js";
 import { renderFormat } from "../pipeline/overlay.js";
 import { rankVariants } from "../pipeline/rank.js";
+import { generateVideo } from "../pipeline/video.js";
 import { readJobFile, saveJobFile } from "../storage.js";
-import { sendImageBuffer, sendText } from "../whatsapp/client.js";
+import { sendImageBuffer, sendText, sendVideoBuffer } from "../whatsapp/client.js";
 import { jobCostUsd, usdToIls } from "../costs.js";
-import type { Variant } from "../db/schema.js";
+import type { Output, Variant } from "../db/schema.js";
 
 export type AdJobData =
   | { step: "brief"; jobId: number }
   | { step: "generate"; jobId: number }
   | { step: "variant"; jobId: number }
-  | { step: "render"; jobId: number };
+  | { step: "render"; jobId: number }
+  | { step: "video"; jobId: number; seconds: 5 | 10 };
 
 const QUEUE = "ads";
 let connection: Redis | undefined;
@@ -52,6 +55,8 @@ async function setJob(jobId: number, patch: Partial<typeof schema.jobs.$inferIns
   await db.update(schema.jobs).set({ ...patch, updatedAt: new Date() }).where(eq(schema.jobs.id, jobId));
 }
 
+const toJpeg = (buf: Buffer) => sharp(buf).jpeg({ quality: 90 }).toBuffer();
+
 function copySummary(c: NonNullable<typeof schema.jobs.$inferSelect["copy"]>, jobId: number, clientName: string) {
   const flags = c.flags.length ? `\n⚠️ לבדיקה: ${c.flags.join("; ")}` : "";
   return `עבודה #${jobId} · ${clientName}
@@ -60,6 +65,7 @@ function copySummary(c: NonNullable<typeof schema.jobs.$inferSelect["copy"]>, jo
 משפט: ${c.subline}
 כפתור: ${c.cta}
 כיוון: ${c.style_rationale}
+קונספט 1: ${c.concepts[0].label} · קונספט 2: ${c.concepts[1].label}
 צבעים: ${c.palette.primary} / ${c.palette.accent}${flags}
 
 כתוב "אישור" לייצור, או "כותרת: …" / "משפט: …" / "כפתור: …" לשינוי.`;
@@ -78,83 +84,120 @@ async function stepBrief(jobId: number) {
   await sendText(operator(), copySummary(copy, jobId, client.name));
 }
 
-async function produceVariants(jobId: number, count: number) {
+/** Generates one image per prompt (in parallel), stores them, appends to job.variants. */
+async function produceVariants(jobId: number, prompts: Array<{ label: string; prompt: string; textZone: "top" | "bottom" }>) {
   const { job } = await loadJob(jobId);
-  if (!job.copy) throw new Error("job has no copy yet");
   const references = await Promise.all(job.productImages.map(async (p) => ({ data: await readJobFile(p), mime: "image/jpeg" })));
-  const offset = job.variants.length;
-  const results = await generateVariants({ jobId, prompt: job.copy.image_prompt, references, aspectRatio: "1:1", size: "2K" }, count, offset);
+  const settled = await Promise.allSettled(
+    prompts.map((p) => generateImage({ jobId, prompt: p.prompt, references, aspectRatio: "1:1", size: "2K" })),
+  );
   const variants: Variant[] = [...job.variants];
-  for (const r of results) {
+  for (const [i, s] of settled.entries()) {
+    if (s.status === "rejected") { log.warn({ err: s.reason, label: prompts[i].label }, "concept failed"); continue; }
     const index = variants.length;
-    const path = await saveJobFile(jobId, `variant-${index + 1}.${r.mime.includes("png") ? "png" : "jpg"}`, r.data);
-    variants.push({ path, index });
+    const jpeg = await toJpeg(s.value.data);
+    const path = await saveJobFile(jobId, `variant-${index + 1}.jpg`, jpeg);
+    variants.push({ path, index, label: prompts[i].label, prompt: prompts[i].prompt, textZone: prompts[i].textZone });
+  }
+  if (variants.length === job.variants.length) {
+    const first = settled.find((s) => s.status === "rejected") as PromiseRejectedResult | undefined;
+    throw new Error(`Image generation failed: ${String(first?.reason)}`);
   }
   await setJob(jobId, { variants });
-  return variants;
+  return variants.slice(job.variants.length);
 }
 
-async function renderOutputs(jobId: number) {
+/** Renders feed + story for the given variants with the current copy. */
+async function renderVariants(jobId: number, indices: number[]) {
   const { job, client } = await loadJob(jobId);
   if (!job.copy) throw new Error("job has no copy");
-  const idx = job.chosenVariant ?? 0;
-  const variant = job.variants[idx];
-  if (!variant) throw new Error(`variant ${idx} missing`);
-  const image = await readJobFile(variant.path);
   const logo = client.logoPath ? await readJobFile(client.logoPath) : null;
-  const [feed, story] = await Promise.all([
-    renderFormat({ image, copy: job.copy, logo, format: "feed" }),
-    renderFormat({ image, copy: job.copy, logo, format: "story" }),
-  ]);
   const slug = client.name.replace(/\s+/g, "-");
   const date = new Date().toISOString().slice(0, 10);
-  const feedPath = await saveJobFile(jobId, `${slug}_${date}_feed.jpg`, feed);
-  const storyPath = await saveJobFile(jobId, `${slug}_${date}_story.jpg`, story);
-  await setJob(jobId, { outputs: { feed: feedPath, story: storyPath, variantIndex: idx }, status: "awaiting_review" });
-  return { feed, story, feedPath, storyPath };
+  const renders: Output[] = (job.outputs?.renders ?? []).filter((r) => !indices.includes(r.variantIndex));
+  const produced: Array<Output & { feedBuf: Buffer; storyBuf: Buffer }> = [];
+  for (const idx of indices) {
+    const v = job.variants[idx];
+    if (!v) continue;
+    const image = await readJobFile(v.path);
+    const copy = { ...job.copy, text_zone: v.textZone };
+    const [feedBuf, storyBuf] = await Promise.all([
+      renderFormat({ image, copy, logo, format: "feed" }),
+      renderFormat({ image, copy, logo, format: "story" }),
+    ]);
+    const feed = await saveJobFile(jobId, `${slug}_${date}_k${idx + 1}_feed.jpg`, feedBuf);
+    const story = await saveJobFile(jobId, `${slug}_${date}_k${idx + 1}_story.jpg`, storyBuf);
+    const out = { variantIndex: idx, feed, story };
+    renders.push(out);
+    produced.push({ ...out, feedBuf, storyBuf });
+  }
+  renders.sort((a, b) => a.variantIndex - b.variantIndex);
+  await setJob(jobId, { outputs: { renders }, status: "awaiting_review" });
+  return produced;
+}
+
+async function sendRenders(jobId: number, produced: Array<Output & { feedBuf: Buffer; storyBuf: Buffer }>) {
+  const { job } = await loadJob(jobId);
+  for (const r of produced) {
+    const label = job.variants[r.variantIndex]?.label ?? "";
+    const star = job.chosenVariant === r.variantIndex ? " ★" : "";
+    await sendImageBuffer(operator(), r.feedBuf, `k${r.variantIndex + 1}-feed.jpg`, `קונספט ${r.variantIndex + 1}${star} · ${label} · פיד 1080×1080`, true);
+    await sendImageBuffer(operator(), r.storyBuf, `k${r.variantIndex + 1}-story.jpg`, `קונספט ${r.variantIndex + 1}${star} · ${label} · סטורי 1080×1920`, true);
+  }
 }
 
 async function stepGenerate(jobId: number) {
   await setJob(jobId, { status: "generating" });
-  const variants = await produceVariants(jobId, 3);
   const { job } = await loadJob(jobId);
-  const buffers = await Promise.all(variants.map((v) => readJobFile(v.path)));
-  const jpegs = await Promise.all(buffers.map((b) => sharpToJpeg(b)));
-  const rank = await rankVariants(jobId, job.brief, job.copy!.headline, jpegs);
-  await setJob(jobId, { chosenVariant: rank.best_index });
+  if (!job.copy) throw new Error("job has no copy yet");
+  const made = await produceVariants(jobId, job.copy.concepts.map((c) => ({ label: c.label, prompt: c.image_prompt, textZone: c.text_zone })));
 
-  for (const [i, v] of variants.entries()) {
-    await sendImageBuffer(operator(), jpegs[i], `variant-${i + 1}.jpg`, `גרסה ${i + 1}${i === rank.best_index ? " ★ מומלצת" : ""}`);
-    void v;
-  }
-  const out = await renderOutputs(jobId);
-  await sendImageBuffer(operator(), out.feed, "feed.jpg", `פיד 1080×1080 (גרסה ${rank.best_index + 1})`, true);
-  await sendImageBuffer(operator(), out.story, "story.jpg", "סטורי 1080×1920", true);
+  const buffers = await Promise.all(made.map((v) => readJobFile(v.path)));
+  const rank = await rankVariants(jobId, job.brief, job.copy.headline, buffers);
+  const chosen = made[rank.best_index]?.index ?? made[0].index;
+  await setJob(jobId, { chosenVariant: chosen });
+
+  const produced = await renderVariants(jobId, made.map((v) => v.index));
+  await sendRenders(jobId, produced);
   const cost = await jobCostUsd(jobId);
-  await sendText(operator(), `${rank.reason ? `למה גרסה ${rank.best_index + 1}: ${rank.reason}\n` : ""}עלות עד כה: ₪${usdToIls(cost).toFixed(2)}
-"בחר 2" לגרסה אחרת · "כותרת: …" לשינוי טקסט · "עוד גרסה" · "סיום"`);
+  await sendText(operator(), `${made.length} קונספטים מוכנים לשליחה ללקוח.${rank.reason ? `\nהמלצה: קונספט ${chosen + 1}. ${rank.reason}` : ""}
+עלות עד כה: ₪${usdToIls(cost).toFixed(2)}
+"בחר N" לפי מה שהלקוח בחר · "כותרת: …" לשינוי טקסט · "עוד גרסה" · "סרטון" · "סיום"`);
 }
 
 async function stepVariant(jobId: number) {
   const { job } = await loadJob(jobId);
+  if (!job.copy) throw new Error("job has no copy yet");
   await setJob(jobId, { status: "generating", revisionRounds: job.revisionRounds + 1 });
-  const variants = await produceVariants(jobId, 1);
-  const v = variants[variants.length - 1];
-  const jpeg = await sharpToJpeg(await readJobFile(v.path));
-  await sendImageBuffer(operator(), jpeg, `variant-${v.index + 1}.jpg`, `גרסה ${v.index + 1}. "בחר ${v.index + 1}" כדי להשתמש בה.`);
-  await setJob(jobId, { status: "awaiting_review" });
+  const base = job.variants[job.chosenVariant ?? 0] ?? job.variants[0];
+  const suffix = EXTRA_VARIATIONS[job.revisionRounds % EXTRA_VARIATIONS.length];
+  const made = await produceVariants(jobId, [{ label: `${base?.label ?? "גרסה"} (וריאציה)`, prompt: `${base?.prompt ?? job.copy.concepts[0].image_prompt}\n${suffix}`, textZone: base?.textZone ?? "top" }]);
+  const produced = await renderVariants(jobId, made.map((v) => v.index));
+  await sendRenders(jobId, produced);
 }
 
 async function stepRender(jobId: number) {
-  const out = await renderOutputs(jobId);
   const { job } = await loadJob(jobId);
-  await sendImageBuffer(operator(), out.feed, "feed.jpg", `פיד (גרסה ${(job.chosenVariant ?? 0) + 1})`, true);
-  await sendImageBuffer(operator(), out.story, "story.jpg", "סטורי", true);
+  const produced = await renderVariants(jobId, job.variants.map((v) => v.index));
+  await sendRenders(jobId, produced);
 }
 
-async function sharpToJpeg(buf: Buffer) {
-  const sharp = (await import("sharp")).default;
-  return sharp(buf).jpeg({ quality: 88 }).toBuffer();
+async function stepVideo(jobId: number, seconds: 5 | 10) {
+  const { job, client } = await loadJob(jobId);
+  if (!job.copy) throw new Error("job has no copy");
+  const idx = job.chosenVariant ?? 0;
+  const v = job.variants[idx];
+  if (!v) throw new Error("no image to animate yet");
+  await setJob(jobId, { status: "generating", wantsVideo: true, videoSeconds: seconds });
+  await sendText(operator(), `מייצר סרטון ${seconds} שניות מקונספט ${idx + 1}. בדרך כלל 1–3 דקות.`);
+  const image = await readJobFile(v.path);
+  const video = await generateVideo({ jobId, image, prompt: job.copy.video_prompt, seconds });
+  const slug = client.name.replace(/\s+/g, "-");
+  const path = await saveJobFile(jobId, `${slug}_${new Date().toISOString().slice(0, 10)}_k${idx + 1}_${seconds}s.mp4`, video);
+  await setJob(jobId, { videoPath: path, status: "awaiting_review" });
+  await sendVideoBuffer(operator(), video, `k${idx + 1}-${seconds}s.mp4`, `סרטון ${seconds} שנ׳ · קונספט ${idx + 1} (בלי טקסט; כתוביות נכנסות בשלב 2)`);
+  const cost = await jobCostUsd(jobId);
+  await sendText(operator(), `עלות עד כה: ₪${usdToIls(cost).toFixed(2)}`);
 }
 
 // ---------- worker ----------
@@ -163,13 +206,14 @@ export function startWorker() {
   const worker = new Worker<AdJobData>(
     QUEUE,
     async (job: Job<AdJobData>) => {
-      const { step, jobId } = job.data;
-      log.info({ step, jobId, attempt: job.attemptsMade + 1 }, "job step start");
-      switch (step) {
-        case "brief": return stepBrief(jobId);
-        case "generate": return stepGenerate(jobId);
-        case "variant": return stepVariant(jobId);
-        case "render": return stepRender(jobId);
+      const d = job.data;
+      log.info({ step: d.step, jobId: d.jobId, attempt: job.attemptsMade + 1 }, "job step start");
+      switch (d.step) {
+        case "brief": return stepBrief(d.jobId);
+        case "generate": return stepGenerate(d.jobId);
+        case "variant": return stepVariant(d.jobId);
+        case "render": return stepRender(d.jobId);
+        case "video": return stepVideo(d.jobId, d.seconds);
       }
     },
     { connection: redis(), concurrency: 2 },
@@ -192,8 +236,6 @@ export function startWorker() {
 
 /** The operator's "current job": the newest one that is not finished. */
 export async function currentJob() {
-  const rows = await db.select().from(schema.jobs)
-    .where(and(eq(schema.jobs.status, schema.jobs.status)))
-    .orderBy(schema.jobs.createdAt);
+  const rows = await db.select().from(schema.jobs).orderBy(schema.jobs.createdAt);
   return rows.filter((j) => j.status !== "done").at(-1) ?? null;
 }

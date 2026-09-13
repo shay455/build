@@ -69,6 +69,16 @@ export async function sendImageBuffer(to: string, buffer: Buffer, filename: stri
   else await sendImage(to, id, caption);
 }
 
+/** Sends an MP4 (H.264/AAC, under 16 MB) as a playable video message. */
+export async function sendVideoBuffer(to: string, buffer: Buffer, filename: string, caption?: string) {
+  const id = await uploadMedia(buffer, "video/mp4", filename);
+  await graph(messagesPath(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messaging_product: "whatsapp", to, type: "video", video: { id, caption } }),
+  });
+}
+
 /** Downloads inbound media. Meta's download URL expires within minutes, so call this from the webhook, not the queue. */
 export async function downloadMedia(mediaId: string): Promise<{ buffer: Buffer; mime: string }> {
   const meta = await graph<{ url: string; mime_type: string }>(`/${mediaId}`, { method: "GET" });

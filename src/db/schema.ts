@@ -1,4 +1,5 @@
 import { pgTable, serial, text, integer, jsonb, timestamp, numeric, boolean } from "drizzle-orm/pg-core";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AdCopy } from "../pipeline/brief.js";
 
 export const clients = pgTable("clients", {
@@ -18,8 +19,9 @@ export const clients = pgTable("clients", {
  */
 export type JobStatus = "briefing" | "awaiting_approval" | "generating" | "awaiting_review" | "done" | "failed";
 
-export interface Variant { path: string; index: number; score?: number; reason?: string }
-export interface Outputs { feed?: string; story?: string; variantIndex: number }
+export interface Variant { path: string; index: number; label: string; prompt: string; textZone: "top" | "bottom" }
+export interface Output { variantIndex: number; feed: string; story: string }
+export interface Outputs { renders: Output[] }
 
 export const jobs = pgTable("jobs", {
   id: serial("id").primaryKey(),
@@ -33,7 +35,9 @@ export const jobs = pgTable("jobs", {
   chosenVariant: integer("chosen_variant"),
   outputs: jsonb("outputs").$type<Outputs>(),
   revisionRounds: integer("revision_rounds").notNull().default(0),
-  wantsVideo: boolean("wants_video").notNull().default(true),
+  wantsVideo: boolean("wants_video").notNull().default(false),
+  videoPath: text("video_path"),
+  videoSeconds: integer("video_seconds"),
   lastError: text("last_error"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

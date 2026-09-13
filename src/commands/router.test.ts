@@ -23,7 +23,8 @@ test("short commands", () => {
   assert.deepEqual(parseCommand("בחר 2"), { type: "choose", index: 1 });
   assert.deepEqual(parseCommand("3"), { type: "choose", index: 2 });
   assert.equal(parseCommand("עוד גרסה").type, "more_variant");
-  assert.equal(parseCommand("בלי סרטון").type, "no_video");
+  assert.deepEqual(parseCommand("סרטון"), { type: "video", seconds: 5 });
+  assert.deepEqual(parseCommand("סרטון 10"), { type: "video", seconds: 10 });
   assert.equal(parseCommand("סיום").type, "finish");
   assert.equal(parseCommand("עלויות").type, "costs");
   assert.equal(parseCommand("עזרה").type, "help");
