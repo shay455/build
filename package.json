@@ -14,6 +14,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "doctor": "tsx scripts/doctor.ts",
     "smoke:overlay": "tsx scripts/smoke-overlay.ts",
     "test": "tsx --test src/**/*.test.ts"
   },

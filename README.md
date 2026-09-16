@@ -36,6 +36,12 @@ npm run dev                  # שרת + worker באותו תהליך
 
 בדשבורד של מטא: WhatsApp → Configuration → Webhook. כתובת: `https://<הטאנל שלך>/webhook`, Verify token: הערך של `WA_VERIFY_TOKEN`. סמן את השדה `messages`.
 
+**כשמשהו לא עובד**, הרץ קודם את בדיקת המצב. היא עוברת על כל החוליות (קובץ ההגדרות, Postgres, Redis, השרת, הטאנל, מטא, מפתחות AI) ואומרת בעברית מה תקוע ואיך לתקן:
+
+```bash
+npm run doctor
+```
+
 בדיקה בלי מפתחות ובלי DB (מציירת את שני הפורמטים מרקע סינתטי):
 
 ```bash
