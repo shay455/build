@@ -19,6 +19,15 @@ async function graph<T>(path: string, init: RequestInit): Promise<T> {
   const text = await res.text();
   if (!res.ok) {
     log.error({ status: res.status, body: text, path }, "WhatsApp API error");
+    // Meta's most common setup errors, translated into the action that fixes them.
+    if (text.includes("131030")) {
+      throw new Error(
+        "מספר הנמען לא ברשימת ההיתרים של מספר הטסט. הוסף אותו ב‑Meta: WhatsApp → API Setup → To → Manage phone number list.",
+      );
+    }
+    if (text.includes('"code":190')) {
+      throw new Error("הטוקן של וואטסאפ פג או נדחה. צור טוקן חדש ב‑System User והחלף את WA_ACCESS_TOKEN ב‑.env.");
+    }
     throw new Error(`WhatsApp API ${res.status}: ${text.slice(0, 300)}`);
   }
   return text ? (JSON.parse(text) as T) : ({} as T);

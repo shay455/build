@@ -219,15 +219,26 @@ export function startWorker() {
     { connection: redis(), concurrency: 2 },
   );
 
-  worker.on("failed", async (job, err) => {
-    if (!job) return;
-    const { step, jobId } = job.data;
-    const final = job.attemptsMade >= (job.opts.attempts ?? 1);
-    log.error({ step, jobId, err, final }, "job step failed");
-    if (final) {
-      await setJob(jobId, { status: "failed", lastError: err.message.slice(0, 500) });
-      await sendText(operator(), `❌ עבודה #${jobId}, שלב ${step} נכשל אחרי 3 ניסיונות:\n${err.message.slice(0, 300)}\nכתוב "אישור" כדי לנסות שוב.`);
-    }
+  // Anything thrown inside this handler becomes an unhandled rejection that kills the process,
+  // so the whole body is guarded: reporting a failure must never be able to take the bot down.
+  worker.on("failed", (job, err) => {
+    void (async () => {
+      if (!job) return;
+      const { step, jobId } = job.data;
+      const final = job.attemptsMade >= (job.opts.attempts ?? 1);
+      log.error({ step, jobId, err, final }, "job step failed");
+      if (!final) return;
+      try {
+        await setJob(jobId, { status: "failed", lastError: err.message.slice(0, 500) });
+      } catch (e) {
+        log.error({ err: e, jobId }, "could not mark job as failed");
+      }
+      try {
+        await sendText(operator(), `❌ עבודה #${jobId}, שלב ${step} נכשל אחרי 3 ניסיונות:\n${err.message.slice(0, 300)}\nכתוב "אישור" כדי לנסות שוב.`);
+      } catch (e) {
+        log.error({ err: e, jobId }, "could not notify the operator about the failure");
+      }
+    })();
   });
 
   log.info("worker started");
