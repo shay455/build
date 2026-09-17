@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { ComparisonPanel } from './ComparisonPanel';
 import { PropertyCard } from './PropertyCard';
+import { SaveSearchButton } from './SaveSearchButton';
 import { MAX_COMPARE } from '@/lib/compare';
 import { ASSET_TYPE_LABEL, FEATURE_LABEL, parseQuery, type FeatureKey, type SearchQuery } from '@/lib/query';
 import { evaluate, search, type SortKey } from '@/lib/search';
@@ -324,6 +325,15 @@ export function SearchApp({ properties, cities }: { properties: Property[]; citi
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="mt-3">
+          <SaveSearchButton
+            query={toQuery(filters)}
+            profile={profile}
+            suggestedName={text.trim() || 'החיפוש שלי'}
+            matchCount={results.length}
+          />
         </div>
 
         {compareIds.length > 0 && (

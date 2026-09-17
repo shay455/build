@@ -3,6 +3,7 @@ import Database from 'better-sqlite3';
 import { existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { Comparable, Features, Property } from '@/types/property';
+import type { SavedSearch, SeenState } from './alerts';
 import { SEED_PROPERTIES } from './seed-data';
 
 const DB_PATH = process.env.DATABASE_PATH ?? resolve(process.cwd(), 'data', 'app.db');
@@ -74,6 +75,18 @@ CREATE TABLE IF NOT EXISTS properties (
 );
 CREATE INDEX IF NOT EXISTS idx_properties_deal_city ON properties (deal, city);
 CREATE INDEX IF NOT EXISTS idx_properties_gush_helka ON properties (gush, helka);
+
+CREATE TABLE IF NOT EXISTS saved_searches (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  query TEXT NOT NULL,
+  profile TEXT NOT NULL,
+  min_score INTEGER NOT NULL DEFAULT 60,
+  created_at TEXT NOT NULL,
+  last_run_at TEXT,
+  -- NULL means "never run". Distinct from '{}', which means "ran, matched nothing".
+  seen TEXT
+);
 
 CREATE TABLE IF NOT EXISTS source_cache (
   key TEXT PRIMARY KEY,
@@ -281,4 +294,67 @@ export function updateMarketData(
     )
     .run({ ...data, comparables: JSON.stringify(data.comparables), id });
   return getProperty(id);
+}
+
+/* ---------- saved searches ---------- */
+
+export function listSavedSearches(): SavedSearch[] {
+  return (getDb().prepare('SELECT * FROM saved_searches ORDER BY created_at DESC').all() as Row[]).map(toSaved);
+}
+
+export function getSavedSearch(id: string): SavedSearch | null {
+  const row = getDb().prepare('SELECT * FROM saved_searches WHERE id = ?').get(id) as Row | undefined;
+  return row ? toSaved(row) : null;
+}
+
+function toSaved(r: Row): SavedSearch {
+  return {
+    id: r.id as string,
+    name: r.name as string,
+    query: JSON.parse(r.query as string) as SavedSearch['query'],
+    profile: r.profile as SavedSearch['profile'],
+    minScore: r.min_score as number,
+    createdAt: r.created_at as string,
+    lastRunAt: (r.last_run_at as string | null) ?? null,
+  };
+}
+
+export function insertSavedSearch(
+  input: Omit<SavedSearch, 'id' | 'createdAt' | 'lastRunAt'>,
+): SavedSearch {
+  const id = `srch_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+  const createdAt = new Date().toISOString();
+  getDb()
+    .prepare(
+      `INSERT INTO saved_searches (id, name, query, profile, min_score, created_at, last_run_at, seen)
+       VALUES (@id, @name, @query, @profile, @min_score, @created_at, NULL, NULL)`,
+    )
+    .run({
+      id,
+      name: input.name,
+      query: JSON.stringify(input.query),
+      profile: input.profile,
+      min_score: input.minScore,
+      created_at: createdAt,
+    });
+  return { ...input, id, createdAt, lastRunAt: null };
+}
+
+export function deleteSavedSearch(id: string): boolean {
+  return getDb().prepare('DELETE FROM saved_searches WHERE id = ?').run(id).changes > 0;
+}
+
+/** Null until the search has run once, which is what makes the first run a baseline. */
+export function getSeen(id: string): Record<string, SeenState> | null {
+  const row = getDb().prepare('SELECT seen FROM saved_searches WHERE id = ?').get(id) as
+    | { seen: string | null }
+    | undefined;
+  if (!row || row.seen === null) return null;
+  return JSON.parse(row.seen) as Record<string, SeenState>;
+}
+
+export function saveRun(id: string, seen: Record<string, SeenState>, at: string): void {
+  getDb()
+    .prepare('UPDATE saved_searches SET seen = @seen, last_run_at = @at WHERE id = @id')
+    .run({ id, seen: JSON.stringify(seen), at });
 }

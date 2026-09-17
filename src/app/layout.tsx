@@ -29,6 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/" className="text-accent-ink hover:underline">
                 חיפוש
               </Link>
+              <Link href="/alerts" className="text-accent-ink hover:underline">
+                חיפושים שמורים
+              </Link>
               <Link href="/add" className="text-accent-ink hover:underline">
                 הוספת נכס
               </Link>
