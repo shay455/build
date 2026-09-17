@@ -437,6 +437,14 @@ export function PropertyCard({
             {selected ? '✓ בהשוואה' : 'הוספה להשוואה'}
           </button>
         )}
+        <a
+          href={`/api/report/${encodeURIComponent(p.id)}?profile=${profile}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-xs font-bold text-ink-2 hover:border-accent hover:text-accent-ink"
+        >
+          דוח נכס
+        </a>
         <span className="rounded-md border border-transparent bg-accent-soft px-2.5 py-1.5 text-xs font-bold text-accent-ink">
           ציון {score.value}/100
         </span>

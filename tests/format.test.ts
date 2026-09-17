@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pct, ratePct, shekel, shortShekel, signedPct } from '@/lib/format';
+import { count, pct, ratePct, shekel, shortShekel, signedPct } from '@/lib/format';
 
 describe('shekel', () => {
   it('groups thousands', () => {
@@ -50,5 +50,17 @@ describe('percentages', () => {
     expect(signedPct(0.09)).toBe('+9%');
     expect(signedPct(-0.12)).toBe('-12%');
     expect(signedPct(0)).toBe('0%');
+  });
+});
+
+describe('count', () => {
+  it('uses the singular form for one', () => {
+    expect(count(1, 'הערת אזהרה אחת רשומה', 'הערות אזהרה רשומות')).toBe('הערת אזהרה אחת רשומה');
+  });
+
+  it('prefixes the number for anything else', () => {
+    expect(count(3, 'יחיד', 'רבים')).toBe('3 רבים');
+    expect(count(0, 'יחיד', 'רבים')).toBe('0 רבים');
+    expect(count(1200, 'יחיד', 'רבים')).toBe('1,200 רבים');
   });
 });

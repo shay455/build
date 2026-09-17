@@ -13,8 +13,11 @@
     "seed": "node --experimental-strip-types scripts/seed.ts"
   },
   "dependencies": {
+    "@fontsource/noto-sans-hebrew": "^5.3.0",
+    "@pdf-lib/fontkit": "^1.1.1",
     "better-sqlite3": "^13.0.3",
     "next": "^15.5.25",
+    "pdf-lib": "^1.17.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^4.6.5"

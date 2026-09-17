@@ -1,6 +1,6 @@
 import type { Flag, Property } from '@/types/property';
 import type { Economics } from './finance';
-import { shekel } from './format';
+import { count, shekel } from './format';
 
 /**
  * What a listing will not tell you. Order matters: blockers first, then checks, then upside.
@@ -25,7 +25,10 @@ export function flagsFor(p: Property, e: Economics): Flag[] {
     out.push({ level: 'warn', text: 'הזכויות רשומות בחברה משכנת ולא בטאבו — רישום העברה איטי ויקר יותר.' });
   }
   if (p.caveats > 0) {
-    out.push({ level: 'warn', text: `${p.caveats} הערות אזהרה רשומות — לבדוק מהותן בנסח.` });
+    out.push({
+      level: 'warn',
+      text: `${count(p.caveats, 'הערת אזהרה אחת רשומה', 'הערות אזהרה רשומות')} — לבדוק את תוכנן בנסח.`,
+    });
   }
   if (!p.registryVerified) {
     out.push({ level: 'warn', text: 'הרישום לא אומת מול נסח טאבו. הזמנת נסח היא הפעולה הבאה.' });

@@ -33,3 +33,11 @@ export function signedPct(x: number): string {
 export function num(n: number): string {
   return nf.format(n);
 }
+
+/**
+ * Hebrew count phrasing. "1 הערות אזהרה" is wrong, and this text goes into a
+ * document a lawyer reads.
+ */
+export function count(n: number, singular: string, plural: string): string {
+  return n === 1 ? singular : `${nf.format(n)} ${plural}`;
+}
