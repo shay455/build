@@ -1,4 +1,13 @@
 /** Deal type. Rent prices are monthly; sale prices are absolute. */
+/**
+ * How much weight a market figure can carry.
+ * - `ok`          enough comparables to quote a percentage
+ * - `thin`        a real sample, but too small to quote precisely
+ * - `unavailable` the source could not be reached or knows nothing about this parcel
+ * - `manual`      a person typed it in
+ */
+export type MarketStatus = 'ok' | 'thin' | 'unavailable' | 'manual';
+
 export type Deal = 'sale' | 'rent';
 
 export type AssetType =
@@ -91,6 +100,14 @@ export interface Property {
   expectedMonthlyRent: number;
   comparables: Comparable[];
   marketAsOf: string;
+  /** Which adapter produced the market figures — `manual` means a person typed them. */
+  marketSourceId: string;
+  /** How much weight those figures can carry. A thin sample must not be quoted as a percentage. */
+  marketStatus: MarketStatus;
+  /** How many comparable transactions stand behind the median. */
+  marketSampleSize: number;
+  /** When the figures were last pulled. Null when they were never enriched. */
+  marketFetchedAt: string | null;
 
   arnona: number;
   vaad: number;

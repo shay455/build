@@ -25,6 +25,12 @@ const PROFILE_LABEL: Record<BuyerProfile, string> = {
 
 const REGISTRY_LABEL = { tabu: 'טאבו', rmi: 'רמ״י', housingCompany: 'חברה משכנת' } as const;
 
+const SOURCE_LABEL: Record<string, string> = {
+  manual: 'הוזן ידנית',
+  nadlan: 'נדל״ן — רשות המסים',
+  fixture: 'נתוני דוגמה מקומיים',
+};
+
 function Row({ label, value, strong }: { label: React.ReactNode; value: React.ReactNode; strong?: boolean }) {
   return (
     <div className="flex justify-between gap-3 border-b border-dotted border-line-2 py-1 text-[13px] last:border-b-0">
@@ -90,8 +96,14 @@ export function PropertyCard({ result, profile }: { result: SearchResult; profil
   const delta = e.deltaVsArea;
   const deltaTone =
     delta === null ? 'bg-surface-3 text-muted' : delta <= -0.03 ? 'bg-good-soft text-good' : delta >= 0.03 ? 'bg-crit-soft text-crit' : 'bg-surface-3 text-muted';
+  // With too few transactions behind it, a percentage is false precision. Say the
+  // sample is thin instead — the number the user would have trusted is the harm.
   const deltaText =
-    delta === null ? 'אין בסיס השוואה' : `${signedPct(delta)} ${sale ? 'מול חציון האזור' : 'מול שכ״ד אזורי'}`;
+    delta !== null
+      ? `${signedPct(delta)} ${sale ? 'מול חציון האזור' : 'מול שכ״ד אזורי'}`
+      : e.comparableBasis === 'thin'
+        ? `מדגם קטן — ${p.marketSampleSize} עסקאות`
+        : 'אין בסיס השוואה';
 
   const headlineFlags = flags.slice(0, 4);
   const restFlags = flags.slice(4);
@@ -359,7 +371,7 @@ export function PropertyCard({ result, profile }: { result: SearchResult; profil
         </Drawer>
 
         {sale && p.comparables.length > 0 && (
-          <Drawer title="עסקאות השוואה · מקור: נדל״ן רשות המסים">
+          <Drawer title={`עסקאות השוואה · ${SOURCE_LABEL[p.marketSourceId] ?? p.marketSourceId}`}>
             {p.comparables.map((c) => (
               <Row
                 key={`${c.date}-${c.sqm}`}
@@ -373,8 +385,21 @@ export function PropertyCard({ result, profile }: { result: SearchResult; profil
               />
             ))}
             <Row label="חציון האזור למ״ר" value={shekel(p.areaMedianPpsm)} strong />
+            <Row
+              label="מדגם"
+              value={
+                p.marketSampleSize > 0 ? `${p.marketSampleSize} עסקאות` : `${p.comparables.length} עסקאות (הוזן ידנית)`
+              }
+            />
+            {p.marketStatus === 'thin' && (
+              <p className="mt-1.5 rounded-md bg-warn-soft px-2 py-1.5 text-[11px] leading-relaxed text-warn">
+                המדגם קטן מכדי לגזור ממנו אחוז. הנתונים מוצגים כפי שהם, בלי פער מחושב.
+              </p>
+            )}
             <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
-              אינדיקציה בלבד ולא שומה: ללא ביקור בנכס וללא התאמות שיטת ההשוואה. עודכן {p.marketAsOf}.
+              מקור: {SOURCE_LABEL[p.marketSourceId] ?? p.marketSourceId}
+              {p.marketFetchedAt ? ` · נשלף ${p.marketFetchedAt.slice(0, 10)}` : ' · לא נשלף ממקור, הוזן ידנית'} ·
+              העסקה האחרונה {p.marketAsOf}. אינדיקציה בלבד ולא שומה: ללא ביקור בנכס וללא התאמות שיטת ההשוואה.
             </p>
           </Drawer>
         )}

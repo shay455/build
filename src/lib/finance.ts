@@ -1,4 +1,4 @@
-import type { BuyerProfile, Property } from '@/types/property';
+import type { BuyerProfile, MarketStatus, Property } from '@/types/property';
 import { purchaseTax, type TaxResult } from './tax';
 
 /** Bank of Israel loan-to-value caps. */
@@ -52,8 +52,13 @@ export function closingCosts(p: Property): ClosingCosts {
 
 export interface Economics {
   ppsm: number | null;
-  /** Price per sqm against the area median, as a signed fraction. Null when there is no basis. */
+  /**
+   * Price per sqm against the area median, as a signed fraction.
+   * Null whenever the market data cannot carry a percentage — see `comparableBasis`.
+   */
   deltaVsArea: number | null;
+  /** Why `deltaVsArea` is or is not a number. Drives what the card shows in its place. */
+  comparableBasis: MarketStatus;
   monthlyAllIn: number;
 
   tax?: TaxResult;
@@ -84,14 +89,19 @@ export function economics(
     return {
       ppsm: null,
       deltaVsArea: benchmark > 0 ? (p.price - benchmark) / benchmark : null,
+      comparableBasis: benchmark > 0 ? p.marketStatus : 'unavailable',
       monthlyAllIn: p.price + p.arnona + p.vaad + p.utilities,
       deposit: p.price * p.depositMonths,
     };
   }
 
   const ppsm = p.sqm > 0 ? p.price / p.sqm : null;
-  const deltaVsArea =
-    ppsm !== null && p.areaMedianPpsm > 0 ? (ppsm - p.areaMedianPpsm) / p.areaMedianPpsm : null;
+  // A thin or missing sample yields no percentage at all. Quoting "12% below the
+  // median" off two transactions is the failure mode this guard exists to prevent.
+  const quotable = p.marketStatus === 'ok' || p.marketStatus === 'manual';
+  const hasBasis = ppsm !== null && p.areaMedianPpsm > 0;
+  const comparableBasis: MarketStatus = !hasBasis ? 'unavailable' : p.marketStatus;
+  const deltaVsArea = hasBasis && quotable ? (ppsm - p.areaMedianPpsm) / p.areaMedianPpsm : null;
 
   const tax = purchaseTax(p.price, profile);
   const closing = closingCosts(p);
@@ -115,6 +125,7 @@ export function economics(
   return {
     ppsm,
     deltaVsArea,
+    comparableBasis,
     monthlyAllIn,
     tax,
     closing,

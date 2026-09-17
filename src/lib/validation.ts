@@ -159,6 +159,11 @@ export function toProperty(input: PropertyInput): Property {
     expectedMonthlyRent: input.expectedMonthlyRent,
     comparables: [],
     marketAsOf: input.marketAsOf,
+    // Provenance is set by the enrichment pipeline, never by whoever fills the form.
+    marketSourceId: 'manual',
+    marketStatus: 'manual',
+    marketSampleSize: 0,
+    marketFetchedAt: null,
     arnona: input.arnona,
     vaad: input.vaad,
     utilities: input.utilities,

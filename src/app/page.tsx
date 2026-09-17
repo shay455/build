@@ -1,11 +1,15 @@
+import { EnrichButton } from '@/components/EnrichButton';
 import { SearchApp } from '@/components/SearchApp';
 import { listCities, listProperties } from '@/lib/db';
+import { resolveSource } from '@/lib/sources';
 
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
   const properties = listProperties();
   const cities = listCities();
+  const source = resolveSource();
+  const enriched = properties.filter((p) => p.marketStatus !== 'manual').length;
 
   return (
     <div className="flex flex-col gap-5">
@@ -15,6 +19,12 @@ export default function HomePage() {
           כתבו מה אתם מחפשים בשפה חופשית. הסוכן מפרש, מסנן, מדרג ומסביר — ומחשב לכל נכס את מס הרכישה לפי
           הפרופיל שלכם, את ההון העצמי הנדרש, את התשואה ואת העלות החודשית המלאה.
         </p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <EnrichButton />
+          <p className="text-xs text-muted">
+            מקור נתוני שוק: {source.label} · {enriched} מתוך {properties.length} נכסים נשלפו ממקור, השאר הוזנו ידנית
+          </p>
+        </div>
       </section>
 
       <SearchApp properties={properties} cities={cities} />

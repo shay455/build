@@ -74,7 +74,34 @@ CREATE TABLE IF NOT EXISTS properties (
 );
 CREATE INDEX IF NOT EXISTS idx_properties_deal_city ON properties (deal, city);
 CREATE INDEX IF NOT EXISTS idx_properties_gush_helka ON properties (gush, helka);
+
+CREATE TABLE IF NOT EXISTS source_cache (
+  key TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  fetched_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
 `;
+
+/**
+ * Additive column migrations. SQLite has no "ADD COLUMN IF NOT EXISTS", so each is
+ * applied only when absent — keeping an already-seeded local database usable.
+ */
+const COLUMN_MIGRATIONS: Array<[column: string, ddl: string]> = [
+  ['market_source_id', "ALTER TABLE properties ADD COLUMN market_source_id TEXT NOT NULL DEFAULT 'manual'"],
+  ['market_status', "ALTER TABLE properties ADD COLUMN market_status TEXT NOT NULL DEFAULT 'manual'"],
+  ['market_sample_size', 'ALTER TABLE properties ADD COLUMN market_sample_size INTEGER NOT NULL DEFAULT 0'],
+  ['market_fetched_at', 'ALTER TABLE properties ADD COLUMN market_fetched_at TEXT'],
+];
+
+function migrate(conn: Database.Database): void {
+  const existing = new Set(
+    (conn.prepare('PRAGMA table_info(properties)').all() as { name: string }[]).map((c) => c.name),
+  );
+  for (const [column, ddl] of COLUMN_MIGRATIONS) {
+    if (!existing.has(column)) conn.exec(ddl);
+  }
+}
 
 interface Row {
   [key: string]: unknown;
@@ -89,6 +116,7 @@ export function getDb(): Database.Database {
   db = new Database(DB_PATH);
   db.pragma('journal_mode = WAL');
   db.exec(SCHEMA);
+  migrate(db);
   const { n } = db.prepare('SELECT COUNT(*) AS n FROM properties').get() as { n: number };
   if (n === 0) insertMany(SEED_PROPERTIES);
   return db;
@@ -101,7 +129,8 @@ const COLUMNS = [
   'lot_sqm', 'floor', 'floors_in_building', 'built_year', 'condition', 'aspects', 'features',
   'registry_kind', 'tenure', 'lease_ends_at', 'caveats', 'mortgages', 'registry_verified', 'split_permit',
   'urban_renewal', 'renewal_stage', 'betterment_risk', 'area_median_ppsm', 'area_median_rent',
-  'expected_monthly_rent', 'comparables', 'market_as_of', 'arnona', 'vaad', 'utilities',
+  'expected_monthly_rent', 'comparables', 'market_as_of', 'market_source_id', 'market_status',
+  'market_sample_size', 'market_fetched_at', 'arnona', 'vaad', 'utilities',
   'deposit_months', 'min_lease_months', 'pets_allowed', 'fair_rent_law',
 ] as const;
 
@@ -120,7 +149,9 @@ function toRow(p: Property): Row {
     urban_renewal: p.urbanRenewal, renewal_stage: p.renewalStage, betterment_risk: p.bettermentRisk,
     area_median_ppsm: p.areaMedianPpsm, area_median_rent: p.areaMedianRent,
     expected_monthly_rent: p.expectedMonthlyRent, comparables: JSON.stringify(p.comparables),
-    market_as_of: p.marketAsOf, arnona: p.arnona, vaad: p.vaad, utilities: p.utilities,
+    market_as_of: p.marketAsOf, market_source_id: p.marketSourceId, market_status: p.marketStatus,
+    market_sample_size: p.marketSampleSize, market_fetched_at: p.marketFetchedAt,
+    arnona: p.arnona, vaad: p.vaad, utilities: p.utilities,
     deposit_months: p.depositMonths, min_lease_months: p.minLeaseMonths,
     pets_allowed: p.petsAllowed ? 1 : 0, fair_rent_law: p.fairRentLaw ? 1 : 0,
   };
@@ -173,6 +204,10 @@ function fromRow(r: Row): Property {
     expectedMonthlyRent: r.expected_monthly_rent as number,
     comparables: JSON.parse(r.comparables as string) as Comparable[],
     marketAsOf: r.market_as_of as string,
+    marketSourceId: (r.market_source_id as string) ?? 'manual',
+    marketStatus: (r.market_status as Property['marketStatus']) ?? 'manual',
+    marketSampleSize: (r.market_sample_size as number) ?? 0,
+    marketFetchedAt: (r.market_fetched_at as string | null) ?? null,
     arnona: r.arnona as number,
     vaad: r.vaad as number,
     utilities: r.utilities as number,
@@ -217,4 +252,33 @@ export function listCities(): string[] {
 
 export function countProperties(): number {
   return (getDb().prepare('SELECT COUNT(*) AS n FROM properties').get() as { n: number }).n;
+}
+
+/** Write back only the market layer, leaving everything a person entered untouched. */
+export function updateMarketData(
+  id: string,
+  data: {
+    areaMedianPpsm: number;
+    comparables: Property['comparables'];
+    marketAsOf: string;
+    marketSourceId: string;
+    marketStatus: Property['marketStatus'];
+    marketSampleSize: number;
+    marketFetchedAt: string;
+  },
+): Property | null {
+  getDb()
+    .prepare(
+      `UPDATE properties SET
+         area_median_ppsm = @areaMedianPpsm,
+         comparables = @comparables,
+         market_as_of = @marketAsOf,
+         market_source_id = @marketSourceId,
+         market_status = @marketStatus,
+         market_sample_size = @marketSampleSize,
+         market_fetched_at = @marketFetchedAt
+       WHERE id = @id`,
+    )
+    .run({ ...data, comparables: JSON.stringify(data.comparables), id });
+  return getProperty(id);
 }
