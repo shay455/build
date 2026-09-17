@@ -1,0 +1,1443 @@
+<title>מפתח נכסים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#EDF0EE; --surface:#FFFFFF; --surface-2:#F5F8F6; --surface-3:#E7ECE9;
+  --ink:#111A17; --ink-2:#37473F; --muted:#67796F; --line:#D3DBD6; --line-2:#E4EAE6;
+  --accent:#0E6E63; --accent-soft:#D9EBE7; --accent-ink:#0A544B;
+  --good:#1D7448; --good-soft:#DBEFE3;
+  --warn:#8A6200; --warn-soft:#F7EDD2;
+  --crit:#A32C2C; --crit-soft:#F6DFDD;
+  --shadow:0 1px 2px rgba(17,26,23,.06), 0 8px 24px -12px rgba(17,26,23,.18);
+  --r:10px;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --body:"Assistant","Segoe UI",system-ui,-apple-system,sans-serif;
+  --display:"Frank Ruhl Libre",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C1311; --surface:#151E1B; --surface-2:#1A2420; --surface-3:#222E29;
+    --ink:#E9F0ED; --ink-2:#B9C7C1; --muted:#8B9B94; --line:#2A3833; --line-2:#202B27;
+    --accent:#4FCCB9; --accent-soft:#11332E; --accent-ink:#8CE6D6;
+    --good:#58CB8C; --good-soft:#132E1F; --warn:#DCAC3E; --warn-soft:#2D2411;
+    --crit:#EB7C71; --crit-soft:#33191A;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C1311; --surface:#151E1B; --surface-2:#1A2420; --surface-3:#222E29;
+  --ink:#E9F0ED; --ink-2:#B9C7C1; --muted:#8B9B94; --line:#2A3833; --line-2:#202B27;
+  --accent:#4FCCB9; --accent-soft:#11332E; --accent-ink:#8CE6D6;
+  --good:#58CB8C; --good-soft:#132E1F; --warn:#DCAC3E; --warn-soft:#2D2411;
+  --crit:#EB7C71; --crit-soft:#33191A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{
+  direction:rtl; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:16px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding-inline:18px; padding-block:0}
+h1,h2,h3,h4{font-family:var(--display); text-wrap:balance; margin:0; line-height:1.2}
+p{margin:0}
+a{color:var(--accent-ink); text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono); font-size:.86em; letter-spacing:-.01em}
+
+/* ---------- masthead ---------- */
+.masthead{border-bottom:1px solid var(--line); background:var(--surface)}
+.mast-inner{max-width:1080px; margin:0 auto; padding-inline:18px; padding-block:38px 30px}
+.eyebrow{font-size:12.5px; font-weight:700; letter-spacing:.14em; color:var(--accent-ink); text-transform:uppercase}
+.masthead h1{font-size:clamp(34px,6vw,54px); font-weight:900; margin-block:10px 8px}
+.dek{font-size:clamp(16px,2.2vw,19px); color:var(--ink-2); max-width:62ch}
+.mast-meta{display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:20px; font-size:13px; color:var(--muted)}
+.mast-meta b{color:var(--ink-2); font-weight:600}
+
+/* ---------- sticky nav ---------- */
+.nav{position:sticky; top:env(safe-area-inset-top,0px); z-index:40; background:color-mix(in srgb,var(--surface) 92%,transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+.nav-inner{max-width:1080px; margin:0 auto; padding-inline:18px; display:flex; gap:2px; overflow-x:auto; scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{display:block; padding:11px 11px; font-size:13.5px; font-weight:600; color:var(--muted); text-decoration:none; white-space:nowrap; border-bottom:2px solid transparent}
+.nav a:hover{color:var(--ink)}
+.nav a.on{color:var(--accent-ink); border-bottom-color:var(--accent)}
+
+/* ---------- sections ---------- */
+section{padding-block:44px; border-top:1px solid var(--line-2)}
+section:first-of-type{border-top:0}
+.sec-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px}
+.sec-num{font-family:var(--mono); font-size:12px; color:var(--accent); font-weight:500; padding-top:4px}
+.sec-head h2{font-size:clamp(23px,3.4vw,31px); font-weight:700}
+.sec-sub{color:var(--muted); font-size:15px; max-width:66ch; margin-bottom:24px}
+
+/* ---------- generic blocks ---------- */
+.grid{display:grid; gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px}
+.panel h3{font-size:17px; font-weight:700; margin-bottom:6px}
+.panel p{font-size:14.5px; color:var(--ink-2)}
+.lede{border-right:3px solid var(--accent); padding:2px 14px 2px 0; margin-bottom:22px; font-size:16.5px; color:var(--ink-2); max-width:70ch}
+ul.clean{margin:0; padding-inline-start:18px; font-size:14.5px; color:var(--ink-2)}
+ul.clean li{margin-block:5px}
+ul.clean li::marker{color:var(--accent)}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0; color:var(--ink); font-weight:600}
+
+.tbl-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r); background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:540px; font-size:14px}
+th,td{text-align:right; padding:9px 13px; border-bottom:1px solid var(--line-2); vertical-align:top}
+th{background:var(--surface-2); font-weight:700; font-size:12.5px; letter-spacing:.03em; color:var(--ink-2); position:sticky; top:0}
+tr:last-child td{border-bottom:0}
+td .mono{color:var(--accent-ink)}
+
+.tag{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:2.5px 8px; border-radius:99px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink-2); white-space:nowrap}
+.tag.ok{background:var(--good-soft); color:var(--good); border-color:transparent}
+.tag.warn{background:var(--warn-soft); color:var(--warn); border-color:transparent}
+.tag.crit{background:var(--crit-soft); color:var(--crit); border-color:transparent}
+.tag.acc{background:var(--accent-soft); color:var(--accent-ink); border-color:transparent}
+.tags{display:flex; flex-wrap:wrap; gap:6px}
+
+.note{background:var(--warn-soft); border-radius:var(--r); padding:14px 16px; font-size:14px; color:var(--ink-2); border-inline-start:3px solid var(--warn)}
+.note b{color:var(--ink)}
+.note.legal{background:var(--surface-2); border-inline-start-color:var(--muted); color:var(--muted); font-size:13px}
+
+/* ---------- prototype shell ---------- */
+.app{background:var(--surface); border:1px solid var(--line); border-radius:14px; overflow:hidden; box-shadow:var(--shadow)}
+.app-bar{display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface-2); border-bottom:1px solid var(--line)}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--line)}
+.app-bar .ttl{font-size:12.5px; font-weight:700; color:var(--muted); letter-spacing:.04em}
+.app-body{padding:16px}
+
+.askbar{display:flex; gap:8px; flex-wrap:wrap}
+.askbar input{flex:1 1 280px; min-width:0; font-family:var(--body); font-size:15px; padding:11px 14px;
+  border:1px solid var(--line); border-radius:9px; background:var(--surface-2); color:var(--ink)}
+.askbar input::placeholder{color:var(--muted)}
+button{font-family:var(--body); cursor:pointer}
+.btn{background:var(--accent); color:#fff; border:0; border-radius:9px; padding:11px 18px; font-size:14.5px; font-weight:700}
+:root[data-theme="dark"] .btn, :root:not([data-theme="light"]) .btn{color:#06201C}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .btn{color:#fff}}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent; color:var(--ink-2); border:1px solid var(--line)}
+.examples{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; align-items:center}
+.examples span{font-size:12.5px; color:var(--muted)}
+.chip{font-size:12.5px; font-weight:600; padding:4px 10px; border-radius:99px; border:1px dashed var(--line); background:transparent; color:var(--accent-ink)}
+.chip:hover{background:var(--accent-soft); border-style:solid}
+
+.filters{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:16px;
+  padding-top:16px; border-top:1px solid var(--line-2)}
+.f label{display:block; font-size:11.5px; font-weight:700; letter-spacing:.05em; color:var(--muted); margin-bottom:4px}
+.f select,.f input[type="number"],.f input[type="text"]{width:100%; font-family:var(--body); font-size:14px; padding:8px 9px;
+  border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink)}
+.f.range{display:flex; gap:6px}
+.f.range > div{flex:1; min-width:0}
+.toggles{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+.tg{font-size:12.5px; font-weight:600; padding:5px 11px; border-radius:99px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2)}
+.tg[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+:root[data-theme="dark"] .tg[aria-pressed="true"]{color:#06201C}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tg[aria-pressed="true"]{color:#06201C}}
+
+.resbar{display:flex; flex-wrap:wrap; align-items:center; gap:10px; justify-content:space-between; margin-top:16px;
+  padding-top:14px; border-top:1px solid var(--line-2)}
+.rescount{font-size:14px; color:var(--ink-2)}
+.rescount b{font-size:19px; font-family:var(--display); font-weight:700; color:var(--ink)}
+.sortwrap{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted)}
+.sortwrap select{font-family:var(--body); font-size:13.5px; padding:6px 9px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink)}
+
+/* ---------- property cards ---------- */
+.cards{display:grid; gap:16px; margin-top:16px; grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column}
+.card:hover{border-color:var(--accent)}
+.facade{position:relative; aspect-ratio:16/9; max-width:100%; background:var(--surface-3); overflow:hidden}
+.facade svg{display:block; width:100%; height:100%}
+.facade-tl{position:absolute; top:9px; inset-inline-start:9px; display:flex; gap:5px; flex-wrap:wrap}
+.facade-tr{position:absolute; top:9px; inset-inline-end:9px}
+.score{display:flex; align-items:center; gap:6px; background:var(--surface); border-radius:99px; padding:4px 10px 4px 5px; box-shadow:var(--shadow)}
+.score b{font-family:var(--display); font-size:15px; font-weight:700; color:var(--accent-ink)}
+.score span{font-size:10.5px; color:var(--muted); font-weight:700; letter-spacing:.04em}
+.ring{width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-size:9.5px; font-weight:700; color:#fff}
+.deal{position:absolute; bottom:9px; inset-inline-start:9px; font-size:11.5px; font-weight:700; padding:3px 9px; border-radius:6px; background:var(--surface); color:var(--ink-2); box-shadow:var(--shadow)}
+
+.c-head{padding:13px 14px 0}
+.c-title{font-family:var(--display); font-size:19px; font-weight:700; line-height:1.28}
+.c-addr{font-size:13px; color:var(--muted); margin-top:2px}
+.c-price{display:flex; align-items:flex-end; gap:9px; flex-wrap:wrap; padding:9px 14px 0}
+.c-price .big{font-family:var(--display); font-size:26px; font-weight:900; letter-spacing:-.01em; line-height:1}
+.c-price .per{font-size:12.5px; color:var(--muted); padding-bottom:2px}
+.delta{font-size:12px; font-weight:700; padding:2px 7px; border-radius:5px}
+.delta.under{background:var(--good-soft); color:var(--good)}
+.delta.over{background:var(--crit-soft); color:var(--crit)}
+.delta.par{background:var(--surface-3); color:var(--muted)}
+
+.specs{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; margin:13px 0 0; background:var(--line-2); border-block:1px solid var(--line-2)}
+.spec{background:var(--surface); padding:8px 6px; text-align:center}
+.spec b{display:block; font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.25}
+.spec span{font-size:10.5px; color:var(--muted); letter-spacing:.03em}
+
+.why{padding:11px 14px 0}
+.why .lbl{font-size:10.5px; font-weight:700; letter-spacing:.07em; color:var(--muted); margin-bottom:5px}
+.flags{display:flex; flex-direction:column; gap:5px; padding:11px 14px 0}
+.flag{display:flex; gap:7px; align-items:flex-start; font-size:12.5px; line-height:1.45; padding:7px 9px; border-radius:7px}
+.flag.crit{background:var(--crit-soft); color:var(--crit)} .flag.warn{background:var(--warn-soft); color:var(--warn)}
+.flag.ok{background:var(--good-soft); color:var(--good)}
+.flag i{font-style:normal; font-weight:700}
+
+.more{margin-top:11px; border-top:1px solid var(--line-2)}
+.more details{border-bottom:1px solid var(--line-2)}
+.more details[open]{background:var(--surface-2)}
+.more summary{list-style:none; cursor:pointer; padding:9px 14px; font-size:13px; font-weight:700; color:var(--ink-2); display:flex; justify-content:space-between; align-items:center; gap:8px}
+.more summary::-webkit-details-marker{display:none}
+.more summary::after{content:"+"; font-family:var(--mono); color:var(--accent); font-size:15px}
+.more details[open] summary::after{content:"–"}
+.more summary:hover{color:var(--ink)}
+.more .body{padding:0 14px 12px}
+.row{display:flex; justify-content:space-between; gap:12px; font-size:13px; padding:4px 0; border-bottom:1px dotted var(--line-2)}
+.row:last-child{border-bottom:0}
+.row dt,.row .k{color:var(--muted)} .row dd,.row .v{margin:0; font-weight:600; text-align:left; font-variant-numeric:tabular-nums}
+.sub{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.5}
+.c-foot{margin-top:auto; padding:11px 14px; display:flex; gap:7px; flex-wrap:wrap; align-items:center; border-top:1px solid var(--line-2)}
+.c-foot .src{font-size:11.5px; color:var(--muted); margin-inline-start:auto}
+.mini{font-size:12.5px; font-weight:700; padding:6px 11px; border-radius:7px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2)}
+.mini:hover{border-color:var(--accent); color:var(--accent-ink)}
+.mini.primary{background:var(--accent-soft); border-color:transparent; color:var(--accent-ink)}
+.empty{grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--muted); font-size:15px}
+
+/* anatomy callouts */
+.anat{display:grid; gap:10px}
+.anat-row{display:grid; grid-template-columns:34px 1fr; gap:12px; align-items:start; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:13px 15px}
+.anat-n{width:26px; height:26px; border-radius:7px; background:var(--accent-soft); color:var(--accent-ink); display:grid; place-items:center; font-family:var(--mono); font-size:12px; font-weight:500}
+.anat-row h4{font-size:15px; font-weight:700; margin-bottom:3px}
+.anat-row p{font-size:14px; color:var(--ink-2)}
+
+pre.code{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:15px; overflow-x:auto;
+  font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--ink-2); direction:ltr; text-align:left}
+pre.code .c{color:var(--muted)} pre.code .s{color:var(--accent-ink)} pre.code .k{color:var(--ink); font-weight:500}
+
+.flow{display:grid; gap:9px}
+.step{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:baseline; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:12px 15px}
+.step .n{font-family:var(--mono); font-size:11.5px; color:var(--accent); font-weight:500}
+.step b{font-weight:700} .step p{font-size:14px; color:var(--ink-2); margin-top:2px}
+
+.phase{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px; display:flex; flex-direction:column; gap:9px}
+.phase .h{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.phase h3{font-size:16px} .phase .when{font-size:11.5px; font-weight:700; color:var(--muted); letter-spacing:.04em}
+
+footer{border-top:1px solid var(--line); background:var(--surface); margin-top:36px}
+.foot-inner{max-width:1080px; margin:0 auto; padding-inline:18px; padding-block:26px 34px; font-size:13px; color:var(--muted)}
+
+@media (max-width:560px){
+  .specs{grid-template-columns:repeat(2,1fr)}
+  .mast-inner{padding-block:28px 22px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="masthead">
+  <div class="mast-inner">
+    <div class="eyebrow">איפיון מוצר · גרסה 0.9 · פרוטוטייפ חי</div>
+    <h1>מפתח נכסים</h1>
+    <p class="dek">סוכן חיפוש נכסים בישראל שמקבל שאלה בשפה חופשית, מצליב לוחות מודעות עם מקורות ממשלתיים רשמיים, ומחזיר כרטיס נכס אחד שבו <b>כל</b> מה שצריך כדי להחליט אם ללכת לראות: המחיר לעומת האזור, מס הרכישה שלך, העלות החודשית האמיתית, התשואה, מצב הרישום והדגלים האדומים.</p>
+    <div class="mast-meta">
+      <span><b>היקף:</b> קנייה יד שנייה · שכירות · יחידות דיור וסטודיו · השקעה ותשואה</span>
+      <span><b>שוק:</b> ישראל בלבד</span>
+      <span><b>תאריך:</b> ספטמבר 2026</span>
+    </div>
+  </div>
+</div>
+
+<nav class="nav" aria-label="ניווט במסמך">
+  <div class="nav-inner" id="nav">
+    <a href="#thesis">העיקרון</a>
+    <a href="#personas">פרסונות</a>
+    <a href="#params">פרמטרי חיפוש</a>
+    <a href="#proto">פרוטוטייפ חי</a>
+    <a href="#anatomy">אנטומיית הכרטיס</a>
+    <a href="#model">מודל נתונים</a>
+    <a href="#sources">מקורות נתונים</a>
+    <a href="#calc">מנועי חישוב</a>
+    <a href="#rank">מנוע ההתאמה</a>
+    <a href="#flows">זרימות</a>
+    <a href="#roadmap">אבני דרך</a>
+    <a href="#risks">סיכונים ומשפטי</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<section id="thesis">
+  <div class="sec-head"><span class="sec-num">01</span><h2>העיקרון המנחה</h2></div>
+  <p class="lede">חיפוש נכסים בישראל לא נכשל בגלל מחסור במודעות. הוא נכשל כי כל נתון שמכריע החלטה יושב במקום אחר: המודעה בלוח, עסקאות ההשוואה בנדל״ן של רשות המסים, הבעלות והשעבודים בטאבו, התוכניות בוועדה המקומית, מס הרכישה במחשבון של רשות המסים, והמשכנתא בבנק. המשתמש מבצע את האינטגרציה הזו ידנית, לכל נכס בנפרד, ולרוב מוותר אחרי שלושה.</p>
+  <div class="grid g3">
+    <div class="panel">
+      <h3>הכרטיס הוא המוצר</h3>
+      <p>רשימת תוצאות היא אמצעי. הערך נוצר בכרטיס אחד שמרכז את כל השכבות, כך שההחלטה "כן/לא/לבדוק" מתקבלת בלי לפתוח לשונית נוספת.</p>
+    </div>
+    <div class="panel">
+      <h3>כל הפרטים — בלי קיר טקסט</h3>
+      <p>הכרטיס דו-שכבתי: פנים לסריקה בשתי שניות, ומתחתיה שש מגירות פתיחה. שום נתון לא נחתך, אבל שום נתון גם לא נכפה על מי שלא ביקש.</p>
+    </div>
+    <div class="panel">
+      <h3>מספר בלי מקור הוא שמועה</h3>
+      <p>לכל נתון מוצג מקור ותאריך. נתון מחושב מסומן כהערכה, ונתון שלא אומת מסומן <span class="tag warn">לאימות</span> ולא נספר בציון ההתאמה.</p>
+    </div>
+  </div>
+  <div class="note" style="margin-top:16px"><b>ההבטחה שהמוצר נותן:</b> "הנה 9 נכסים שמתאימים לך, וזאת בדיוק הסיבה שכל אחד נמצא ברשימה." <b>ההבטחה שהמוצר לא נותן:</b> שומה, ייעוץ משפטי, או חישוב מס מחייב.</p></div>
+</section>
+
+<section id="personas">
+  <div class="sec-head"><span class="sec-num">02</span><h2>ארבע פרסונות, ארבעה מסכים שונים</h2></div>
+  <p class="sec-sub">אותו מנוע חיפוש, אבל מה שמודגש בכרטיס משתנה לפי המצב. בחירת הפרסונה היא ההגדרה הראשונה שהמשתמש עושה, והיא משנה את ברירות המחדל של הפילטרים, את סדר המגירות בכרטיס, ואת נוסחת הציון.</p>
+  <div class="grid g2">
+    <div class="panel">
+      <h3>דנה — דירה ראשונה</h3>
+      <p>בת 31, תל אביב, הון עצמי 620 אלף ₪. רגישה למחיר ולתשלום החודשי, לא לתשואה.</p>
+      <div class="tags" style="margin-top:9px">
+        <span class="tag acc">מס רכישה: דירה יחידה</span><span class="tag acc">LTV עד 75%</span><span class="tag acc">החזר חודשי בראש הכרטיס</span>
+      </div>
+      <p class="sub"><b>מה חייב להופיע:</b> מדרגות מס רכישה מפורטות, החזר משכנתא משוער, ארנונה + ועד בית, "כמה הון עצמי חסר לי".</p>
+    </div>
+    <div class="panel">
+      <h3>יוסי — משקיע</h3>
+      <p>בן 48, מחזיק שתי דירות, מחפש תשואה בפריפריה. המחיר פחות משנה מהיחס בין שכר דירה למחיר.</p>
+      <div class="tags" style="margin-top:9px">
+        <span class="tag acc">מס רכישה: דירה נוספת 8%</span><span class="tag acc">LTV עד 50%</span><span class="tag acc">תשואה ברוטו ונטו</span>
+      </div>
+      <p class="sub"><b>מה חייב להופיע:</b> תשואה ברוטו ונטו, שכ״ד אזורי לעומת המבוקש, עלות רכישה כוללת, ימים בשוק, פוטנציאל התחדשות עירונית.</p>
+    </div>
+    <div class="panel">
+      <h3>מיכל — משפרת דיור</h3>
+      <p>בת 44, מוכרת דירה קיימת. הטעות הקלאסית שלה: לחשוב שהיא משלמת 8% מס רכישה.</p>
+      <div class="tags" style="margin-top:9px">
+        <span class="tag ok">מסלול דירה יחידה בתנאי מכירה</span><span class="tag acc">LTV עד 70%</span><span class="tag warn">שעון 24 חודשים</span>
+      </div>
+      <p class="sub"><b>מה חייב להופיע:</b> תזכורת לחלון המכירה הסטטוטורי, מס שבח צפוי על הדירה הנמכרת, וגשר תזרימי בין המכירה לקנייה.</p>
+    </div>
+    <div class="panel">
+      <h3>אורי — שוכר</h3>
+      <p>בן 26, מחפש סטודיו או יחידת דיור. מודד עלות חודשית כוללת, לא שכר דירה.</p>
+      <div class="tags" style="margin-top:9px">
+        <span class="tag acc">עלות חודשית מלאה</span><span class="tag warn">בדיקת חוק שכירות הוגנת</span><span class="tag crit">בדיקת חוקיות פיצול</span>
+      </div>
+      <p class="sub"><b>מה חייב להופיע:</b> שכ״ד + ארנונה + ועד בית + חשמל משוער, תאריך כניסה, פיקדון, ובנכס מפוצל — האם קיים היתר.</p>
+    </div>
+  </div>
+</section>
+
+<section id="params">
+  <div class="sec-head"><span class="sec-num">03</span><h2>קטלוג פרמטרי החיפוש</h2></div>
+  <p class="sec-sub">שבע משפחות של פרמטרים. עמודת "מקור" מציינת מאיפה הערך מגיע: <span class="mono">מודעה</span> מהלוח, <span class="mono">רשמי</span> ממקור ממשלתי, <span class="mono">מחושב</span> מהמנוע שלנו. בעמודת "נראות" — האם הפרמטר מופיע בפילטרים הראשיים, במתקדמים, או רק ככרטיס.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>משפחה</th><th>פרמטרים</th><th>מקור</th><th>נראות</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>עסקה</b></td>
+          <td>סוג עסקה (מכירה / שכירות), טווח מחיר, טווח שכ״ד, מחיר למ״ר מקסימלי, גמישות במחיר, ירידת מחיר מפרסום</td>
+          <td class="mono">מודעה + מחושב</td><td>ראשי</td>
+        </tr>
+        <tr>
+          <td><b>מיקום</b></td>
+          <td>עיר, שכונה, רדיוס ממיקום, קרבה לתחבורה ציבורית / רכבת קלה, אזור רישום בית ספר, <span class="mono">גוש/חלקה</span>, קרבה למקום עבודה בזמן נסיעה</td>
+          <td class="mono">מודעה + רשמי</td><td>ראשי</td>
+        </tr>
+        <tr>
+          <td><b>הנכס</b></td>
+          <td>סוג (דירה, דירת גן, פנטהאוז, סטודיו, <b>יחידת דיור</b>, בית פרטי, דו־משפחתי, מגרש), חדרים, שטח בנוי, שטח מרפסת, שטח מגרש, קומה ומתוך כמה, כיווני אוויר, שנת בנייה, מצב (חדש / משופץ / שמור / דורש שיפוץ)</td>
+          <td class="mono">מודעה</td><td>ראשי + מתקדם</td>
+        </tr>
+        <tr>
+          <td><b>מאפיינים</b></td>
+          <td>מעלית, חניה (מספר ומקורה), מחסן, ממ״ד, מרפסת שמש, מיזוג מרכזי, סורגים, דוד שמש, גישה לנכים, מרוהט, חיות מחמד, כניסה נפרדת</td>
+          <td class="mono">מודעה</td><td>מתקדם</td>
+        </tr>
+        <tr>
+          <td><b>משפטי ורישומי</b></td>
+          <td>סוג רישום (טאבו / רמ״י / חברה משכנת), בעלות מול חכירה, יתרת חכירה, קיום הערות אזהרה, קיום משכנתא רשומה, התאמה בין המצוי לרשום, היתר לפיצול יחידת דיור</td>
+          <td class="mono">רשמי</td><td>כרטיס (מגירה)</td>
+        </tr>
+        <tr>
+          <td><b>תכנון והתחדשות</b></td>
+          <td>תמ״א 38/1, תמ״א 38/2 הריסה ובנייה, פינוי־בינוי, שלב ההליך, זכויות בנייה לא מנוצלות, חשיפה להיטל השבחה</td>
+          <td class="mono">רשמי</td><td>מתקדם + כרטיס</td>
+        </tr>
+        <tr>
+          <td><b>כלכלי (מחושב)</b></td>
+          <td>תשואה ברוטו, תשואה נטו, עלות רכישה כוללת, מס רכישה לפי פרופיל, החזר משכנתא, עלות חודשית כוללת, פער מול חציון האזור, הון עצמי נדרש</td>
+          <td class="mono">מחושב</td><td>ראשי (למשקיע) + כרטיס</td>
+        </tr>
+        <tr>
+          <td><b>מטא</b></td>
+          <td>תאריך פרסום, ימים בשוק, מפרסם (פרטי / תיווך), דמי תיווך, תאריך כניסה, בלעדיות, מספר עדכוני מחיר</td>
+          <td class="mono">מודעה</td><td>כרטיס</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="panel">
+      <h3>שאילתה בשפה חופשית</h3>
+      <p>המשתמש לא בוחר 14 פילטרים. הוא כותב משפט, והסוכן ממפה אותו לפרמטרים ומציג את המיפוי כצ׳יפים הניתנים לעריכה — כך שהפרשנות שקופה וניתנת לתיקון במקום להיות קופסה שחורה.</p>
+      <p class="sub">דוגמה: "4 חדרים בחיפה עד 2 מיליון עם מעלית וחניה, תשואה מעל 4%" ← עיר=חיפה, חדרים≥4, מחיר≤2,000,000, מעלית=כן, חניה=כן, תשואה≥4%.</p>
+    </div>
+    <div class="panel">
+      <h3>פרמטרים שהמשתמש לא יודע לבקש</h3>
+      <p>הסוכן מוסיף מיוזמתו בדיקות שמשתמש ממוצע לא חושב עליהן, ומציג אותן כדגלים: פער חריג מול חציון האזור, יחידת דיור ללא היתר פיצול, חכירה עם יתרה קצרה, נכס שחזר לשוק שלוש פעמים, והיטל השבחה צפוי בעקבות תוכנית מאושרת.</p>
+    </div>
+  </div>
+</section>
+
+<section id="proto">
+  <div class="sec-head"><span class="sec-num">04</span><h2>הפרוטוטייפ החי</h2></div>
+  <p class="sec-sub">זה לא מוקאפ — החיפוש, הפילטרים, הדירוג, מס הרכישה והתשואה מחושבים כאן בזמן אמת. הנכסים הם דוגמה מייצגת ולא מלאי אמיתי. שנו את פרופיל הקונה למעלה וראו איך מס הרכישה וההון העצמי הנדרש משתנים בכל כרטיס.</p>
+
+  <div class="app">
+    <div class="app-bar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="ttl">מפתח נכסים · חיפוש</span>
+    </div>
+    <div class="app-body">
+      <div class="askbar">
+        <label for="ask" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">שאילתת חיפוש חופשית</label>
+        <input id="ask" type="text" value="4 חדרים עד 5.5 מיליון עם מעלית וחניה" autocomplete="off">
+        <button class="btn" id="askGo">חפש</button>
+        <button class="btn ghost" id="askClear">נקה</button>
+      </div>
+      <div class="examples">
+        <span>נסו:</span>
+        <button class="chip" data-q="4 חדרים בחיפה עד 2 מיליון עם מעלית וחניה">4 חדרים בחיפה עד 2 מיליון עם מעלית וחניה</button>
+        <button class="chip" data-q="להשקעה תשואה מעל 4% עם ממ״ד">להשקעה, תשואה מעל 4% עם ממ״ד</button>
+        <button class="chip" data-q="סטודיו להשכרה בתל אביב עד 6000">סטודיו להשכרה בתל אביב עד 6000</button>
+        <button class="chip" data-q="יחידת דיור עד 1.3 מיליון">יחידת דיור עד 1.3 מיליון</button>
+      </div>
+
+      <div class="filters" id="filters">
+        <div class="f"><label for="f-deal">סוג עסקה</label>
+          <select id="f-deal"><option value="sale">מכירה</option><option value="rent">שכירות</option></select></div>
+        <div class="f"><label for="f-city">עיר</label>
+          <select id="f-city"><option value="">כל הערים</option></select></div>
+        <div class="f"><label for="f-type">סוג נכס</label>
+          <select id="f-type"><option value="">כל הסוגים</option></select></div>
+        <div class="f"><label for="f-rooms">חדרים (מינימום)</label>
+          <select id="f-rooms"><option value="0">הכול</option><option value="1">1+</option><option value="2">2+</option><option value="2.5">2.5+</option><option value="3">3+</option><option value="3.5">3.5+</option><option value="4">4+</option><option value="5">5+</option></select></div>
+        <div class="f range"><div><label for="f-pmin">מחיר מ־</label><input id="f-pmin" type="number" inputmode="numeric" placeholder="0"></div>
+          <div><label for="f-pmax">עד</label><input id="f-pmax" type="number" inputmode="numeric" placeholder="ללא הגבלה"></div></div>
+        <div class="f"><label for="f-size">שטח מינימלי (מ״ר)</label>
+          <input id="f-size" type="number" inputmode="numeric" placeholder="0"></div>
+        <div class="f"><label for="f-yield">תשואה ברוטו מינימלית %</label>
+          <input id="f-yield" type="number" inputmode="decimal" step="0.1" placeholder="0"></div>
+        <div class="f"><label for="f-buyer">פרופיל הקונה (למס רכישה)</label>
+          <select id="f-buyer">
+            <option value="single">דירה יחידה</option>
+            <option value="upgrade">משפר דיור (מוכר תוך החלון)</option>
+            <option value="additional">דירה נוספת / השקעה</option>
+            <option value="oleh">עולה חדש — דירת מגורים יחידה</option>
+            <option value="reg11">זכאי תקנה 11 (נכה / עיוור / נפגע פעולת איבה / משפחה שכולה)</option>
+          </select></div>
+      </div>
+
+      <div class="toggles" id="toggles" role="group" aria-label="מאפיינים נדרשים"></div>
+
+      <div class="resbar">
+        <div class="rescount" id="rescount">טוען…</div>
+        <div class="sortwrap">
+          <label for="f-sort">מיון</label>
+          <select id="f-sort">
+            <option value="match">התאמה</option>
+            <option value="price-asc">מחיר — מהנמוך</option>
+            <option value="price-desc">מחיר — מהגבוה</option>
+            <option value="ppsm">מחיר למ״ר</option>
+            <option value="yield">תשואה ברוטו</option>
+            <option value="fresh">פורסם לאחרונה</option>
+            <option value="stale">הכי הרבה ימים בשוק</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cards" id="cards"></div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:10px">הנכסים בפרוטוטייפ הם נתוני דוגמה שנכתבו לצורך ההדגמה, לא מלאי אמיתי. החישובים אמיתיים; הנתונים שמוזנים להם אינם.</p>
+</section>
+
+<section id="anatomy">
+  <div class="sec-head"><span class="sec-num">05</span><h2>אנטומיית כרטיס הנכס</h2></div>
+  <p class="sec-sub">הדרישה "כל הפרטים בכל כרטיס" מתנגשת חזיתית עם "ידידותי ונוח". הפתרון: הכול נמצא בכרטיס, אבל בשתי שכבות — <b>פנים הכרטיס</b> נסרק בשתי שניות ועונה על "להמשיך או לא", ושש <b>מגירות</b> מחזיקות את המסה. אף נתון לא מקוצץ ואף נתון לא נכפה.</p>
+
+  <h3 style="font-size:17px; margin-bottom:10px">שכבה ראשונה — פנים הכרטיס (תמיד גלוי)</h3>
+  <div class="anat">
+    <div class="anat-row"><span class="anat-n">1</span><div><h4>חזית מצוירת + ציון התאמה + תג עסקה</h4><p>אין תמונות אמיתיות בשלב הזה, ובכוונה: תמונת מתווך היא כלי שכנוע, לא נתון. במקומה איור סכמטי שנגזר מנתוני הנכס עצמו — מספר הקומות בבניין והקומה של הדירה מסומנת. ציון ההתאמה (0–100) יושב בפינה עם טבעת צבע, ותג "מתחת לחציון האזור" או "ירד במחיר" בתחתית.</p></div></div>
+    <div class="anat-row"><span class="anat-n">2</span><div><h4>כותרת, כתובת וגוש/חלקה</h4><p>סוג נכס + חדרים + שכונה, עיר. מתחת הכתובת, ולידה מזהה הגוש/חלקה בגופן מונו — המפתח שמאפשר לחצות לנדל״ן, לטאבו ול-GovMap.</p></div></div>
+    <div class="anat-row"><span class="anat-n">3</span><div><h4>מחיר, מחיר למ״ר, ופער מול האזור</h4><p>המחיר הגדול, לצידו המחיר למ״ר, ולצידו תג הפער מול חציון עסקאות ההשוואה: ‎−12%‎ בירוק, ‎+9%‎ באדום. זה הנתון שהופך רשימה לעבודת ניתוח, והוא המקום היחיד בכרטיס שבו הצבע הסמנטי משמש.</p></div></div>
+    <div class="anat-row"><span class="anat-n">4</span><div><h4>ארבעה מספרי ליבה</h4><p>שטח, חדרים, קומה מתוך סך הקומות, ושנת בנייה — בשורה אחת של ארבע משבצות עם ספרות טבלאיות, כך שהעין משווה בין כרטיסים לאורך עמודה.</p></div></div>
+    <div class="anat-row"><span class="anat-n">5</span><div><h4>"למה זה כאן" — נימוקי ההתאמה</h4><p>שלושה צ׳יפים שמסבירים את הציון במונחי הבקשה של המשתמש: "מרפסת 12 מ״ר", "‎14% מתחת לחציון", "תשואה 4.8%". סוכן שלא מסביר את הדירוג שלו מאמן את המשתמש להתעלם ממנו.</p></div></div>
+    <div class="anat-row"><span class="anat-n">6</span><div><h4>דגלים — מה שמתווך לא יגיד</h4><p>שורות צבע קצרות: אדום לחסם עסקה (יחידת דיור ללא היתר פיצול, חכירה עם יתרה קצרה), ענבר לבדיקה נדרשת (בניין ללא ממ״ד, מחיר נמוך בחריגות), ירוק להזדמנות (תמ״א 38/2 בהליך, ירידת מחיר אחרי 90 יום).</p></div></div>
+  </div>
+
+  <h3 style="font-size:17px; margin:22px 0 10px">שכבה שנייה — שש המגירות</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>מגירה</th><th>מה בפנים</th><th>מקור</th></tr></thead>
+      <tbody>
+        <tr><td><b>מאפיינים ומצב</b></td><td>מעלית, חניה ומספרה, מחסן, ממ״ד, מרפסת ושטחה, מיזוג, כיווני אוויר, סורגים, גישה לנכים, ריהוט, מצב הנכס, כניסה נפרדת, תאריך כניסה</td><td class="mono">מודעה</td></tr>
+        <tr><td><b>עלות חודשית מלאה</b></td><td>החזר משכנתא משוער (או שכ״ד), ארנונה, ועד בית, ביטוח, תחזוקה — וסכום אחד גדול בתחתית. זה המספר שהמשתמש באמת משלם</td><td class="mono">מחושב + מודעה</td></tr>
+        <tr><td><b>מיסוי ועלות רכישה</b></td><td>מס רכישה לפי הפרופיל שנבחר, עם פירוט מדרגה־מדרגה; עו״ד, תיווך, שמאי ואגרות; הון עצמי נדרש לפי מגבלת ה-LTV; סה״כ עלות כניסה</td><td class="mono">מחושב</td></tr>
+        <tr><td><b>השקעה ותשואה</b></td><td>שכ״ד צפוי, תשואה ברוטו, תשואה נטו אחרי הוצאות ומס, תשואה על ההון העצמי, נקודת איזון תזרימית</td><td class="mono">מחושב</td></tr>
+        <tr><td><b>רישום, תכנון וסביבה</b></td><td>סוג רישום ויתרת חכירה, הערות אזהרה ומשכנתאות רשומות, תוכניות חלות והתחדשות עירונית, חשיפה להיטל השבחה, מרחקי הליכה לתחבורה, בי״ס וגן</td><td class="mono">רשמי</td></tr>
+        <tr><td><b>עסקאות השוואה</b></td><td>3–5 עסקאות אחרונות באותו גוש או ברדיוס 300 מ׳ עם תאריך, שטח, מחיר ומחיר למ״ר — ומהן נגזר הפער שמוצג בפנים הכרטיס</td><td class="mono">רשמי (נדל״ן)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g3" style="margin-top:16px">
+    <div class="panel"><h3>שורת פעולות</h3><p>שמירה, השוואה (עד 4 נכסים), הפקת דוח נכס PDF, ושאלה חופשית לסוכן בהקשר הנכס הספציפי: "כמה יעלה לי לשפץ את זה?"</p></div>
+    <div class="panel"><h3>שקיפות מקור</h3><p>בתחתית כל כרטיס: שם הלוח, תאריך הפרסום, ימים בשוק, וסוג המפרסם. מפרסם פרטי מול תיווך משנה את המשא ומתן ואת העלות.</p></div>
+    <div class="panel"><h3>מה שלא נכנס לכרטיס</h3><p>טקסט המודעה המקורי במלואו, גלריית תמונות, ופרטי קשר — שלושתם מאחורי לחיצה. הכרטיס הוא ניתוח, לא שכפול של המודעה.</p></div>
+  </div>
+</section>
+
+<section id="model">
+  <div class="sec-head"><span class="sec-num">06</span><h2>מודל הנתונים</h2></div>
+  <p class="sec-sub">ישות אחת, <span class="mono">Property</span>, שמאחדת שלוש שכבות מקור. כל שדה נושא <span class="mono">source</span> ו-<span class="mono">asOf</span>, וכל שדה מחושב נושא <span class="mono">assumptions</span>. ללא זה אי אפשר להציג "מחיר למ״ר נמוך ב-12%" בלי לרמות.</p>
+  <pre class="code">{
+  <span class="k">"id"</span>: <span class="s">"prop_7025_88_a3"</span>,
+  <span class="k">"deal"</span>: <span class="s">"sale"</span>,                      <span class="c">// sale | rent</span>
+  <span class="k">"listing"</span>: {                          <span class="c">// שכבה 1 — מהלוח</span>
+    <span class="k">"source"</span>: <span class="s">"yad2"</span>, <span class="k">"externalId"</span>: <span class="s">"…"</span>, <span class="k">"url"</span>: <span class="s">"…"</span>,
+    <span class="k">"publishedAt"</span>: <span class="s">"2026-07-02"</span>, <span class="k">"daysOnMarket"</span>: 77,
+    <span class="k">"priceHistory"</span>: [{ <span class="k">"date"</span>: <span class="s">"2026-07-02"</span>, <span class="k">"price"</span>: 3390000 },
+                      { <span class="k">"date"</span>: <span class="s">"2026-08-28"</span>, <span class="k">"price"</span>: 3150000 }],
+    <span class="k">"publisher"</span>: { <span class="k">"kind"</span>: <span class="s">"agency"</span>, <span class="k">"feePct"</span>: 2.0 },
+    <span class="k">"availableFrom"</span>: <span class="s">"2026-11-01"</span>
+  },
+  <span class="k">"location"</span>: {
+    <span class="k">"city"</span>: <span class="s">"תל אביב-יפו"</span>, <span class="k">"neighborhood"</span>: <span class="s">"פלורנטין"</span>, <span class="k">"street"</span>: <span class="s">"ויטל"</span>,
+    <span class="k">"gush"</span>: 7025, <span class="k">"helka"</span>: 88, <span class="k">"tatHelka"</span>: 12,   <span class="c">// המפתח לכל מקור רשמי</span>
+    <span class="k">"lat"</span>: 32.0553, <span class="k">"lng"</span>: 34.7698,
+    <span class="k">"walk"</span>: { <span class="k">"transitMin"</span>: 4, <span class="k">"schoolMin"</span>: 9, <span class="k">"parkMin"</span>: 6 }
+  },
+  <span class="k">"asset"</span>: {
+    <span class="k">"type"</span>: <span class="s">"apartment"</span>,   <span class="c">// apartment|garden|penthouse|studio|housingUnit|house|duplex|lot</span>
+    <span class="k">"rooms"</span>: 3, <span class="k">"sqm"</span>: 72, <span class="k">"balconySqm"</span>: 6, <span class="k">"lotSqm"</span>: null,
+    <span class="k">"floor"</span>: 2, <span class="k">"floorsInBuilding"</span>: 4, <span class="k">"builtYear"</span>: 1958,
+    <span class="k">"condition"</span>: <span class="s">"renovated"</span>, <span class="k">"aspects"</span>: [<span class="s">"דרום"</span>, <span class="s">"מזרח"</span>],
+    <span class="k">"features"</span>: { <span class="k">"elevator"</span>: false, <span class="k">"parking"</span>: 0, <span class="k">"storage"</span>: false,
+                   <span class="k">"mamad"</span>: false, <span class="k">"ac"</span>: <span class="s">"mini-central"</span>, <span class="k">"accessible"</span>: false,
+                   <span class="k">"furnished"</span>: false, <span class="k">"separateEntrance"</span>: false }
+  },
+  <span class="k">"registry"</span>: {                         <span class="c">// שכבה 2 — רשמי</span>
+    <span class="k">"kind"</span>: <span class="s">"tabu"</span>,                     <span class="c">// tabu | rmi | housingCompany</span>
+    <span class="k">"tenure"</span>: <span class="s">"ownership"</span>, <span class="k">"leaseEndsAt"</span>: null,
+    <span class="k">"caveats"</span>: [], <span class="k">"mortgages"</span>: 1, <span class="k">"verifiedAt"</span>: null,
+    <span class="k">"splitPermit"</span>: <span class="s">"n/a"</span>              <span class="c">// ליחידת דיור: granted|none|unknown</span>
+  },
+  <span class="k">"planning"</span>: {
+    <span class="k">"urbanRenewal"</span>: { <span class="k">"track"</span>: <span class="s">"tama38-2"</span>, <span class="k">"stage"</span>: <span class="s">"permit-filed"</span> },
+    <span class="k">"bettermentRisk"</span>: <span class="s">"medium"</span>
+  },
+  <span class="k">"market"</span>: {                           <span class="c">// שכבה 3 — נגזר מנדל״ן</span>
+    <span class="k">"areaMedianPpsm"</span>: 49800, <span class="k">"comparables"</span>: [ <span class="c">/* 3–5 עסקאות */</span> ],
+    <span class="k">"expectedMonthlyRent"</span>: 7800, <span class="k">"asOf"</span>: <span class="s">"2026-09-01"</span>
+  },
+  <span class="k">"computed"</span>: {                         <span class="c">// אף פעם לא נשמר — מחושב לכל משתמש</span>
+    <span class="k">"ppsm"</span>: 43750, <span class="k">"deltaVsArea"</span>: -0.121,
+    <span class="k">"purchaseTax"</span>: { <span class="k">"track"</span>: <span class="s">"single"</span>, <span class="k">"amount"</span>: 60738, <span class="k">"brackets"</span>: [ … ] },
+    <span class="k">"grossYield"</span>: 0.0297, <span class="k">"netYield"</span>: 0.0212,
+    <span class="k">"monthlyAllIn"</span>: 14980, <span class="k">"equityRequired"</span>: 848238,
+    <span class="k">"matchScore"</span>: 86, <span class="k">"reasons"</span>: [ … ], <span class="k">"flags"</span>: [ … ]
+  }
+}</pre>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="panel"><h3>שלוש החלטות מודל</h3>
+      <ul class="clean">
+        <li><b>גוש/חלקה הוא המפתח הראשי</b>, לא הכתובת. כתובות בישראל נכתבות בשש צורות; גוש/חלקה מזהה חד־ערכית מול נדל״ן, טאבו ו-GovMap.</li>
+        <li><b><span class="mono">computed</span> לא נשמר במסד.</b> מס רכישה ותשואה תלויים בפרופיל המשתמש ובמדרגות שמשתנות בחקיקה — שמירה שלהם היא באג מובנה.</li>
+        <li><b><span class="mono">verifiedAt: null</span> הוא ערך תקף.</b> "לא בדקנו" חייב להיות שונה מ"בדקנו ואין", והממשק מציג את ההבדל.</li>
+      </ul>
+    </div>
+    <div class="panel"><h3>יחידת דיור — מקרה קצה שהוא ליבה</h3>
+      <p>יחידת דיור מפוצלת היא הסוג היחיד שבו הנתון החשוב ביותר לא מופיע בשום מודעה: האם הפיצול חוקי. המודל מייצג זאת ב-<span class="mono">registry.splitPermit</span>, וברירת המחדל היא <span class="mono">unknown</span> — שמייצרת דגל ענבר בכרטיס, לא דגל ירוק שקרי.</p>
+      <p class="sub">המשמעות המעשית: בלי היתר פיצול, בנק עלול לסרב למשכנתא, העירייה עלולה להוציא צו, והתשואה המפורסמת מתבססת על שני שוכרים שאולי אינם חוקיים.</p>
+    </div>
+  </div>
+</section>
+
+<section id="sources">
+  <div class="sec-head"><span class="sec-num">07</span><h2>מקורות נתונים — מה זמין, מה עולה, מה דורש רישיון</h2></div>
+  <p class="sec-sub">ארכיטקטורה היברידית: השכבה הרשמית היא הנכס שלנו והיא חינמית ואמינה; שכבת הלוחות היא הכרחית לזמינות אבל היא הסיכון המשפטי והתפעולי היחיד במוצר. האיפיון מפריד ביניהן בכוונה, כדי שהמוצר ימשיך לעבוד גם אם ספק לוח נחסם.</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>מקור</th><th>מה מספק</th><th>גישה</th><th>הסתייגות</th></tr></thead>
+      <tbody>
+        <tr><td><b>נדל״ן — רשות המסים</b><br><span class="sub">nadlan.gov.il</span></td><td>עסקאות מכר שדווחו, לפי גוש/חלקה או כתובת. הבסיס לכל חישובי ההשוואה והפער</td><td><span class="tag ok">חינמי</span></td><td>היסטורי בלבד; פיגור דיווח של שבועות עד חודשים; אין מודעות פעילות</td></tr>
+        <tr><td><b>טאבו — רשם המקרקעין</b><br><span class="sub">gov.il · mekarkein-online</span></td><td>בעלות, שעבודים, הערות אזהרה, משכנתאות</td><td><span class="tag warn">אגרה לנסח</span></td><td>לא מוציאים נסח לכל תוצאה — יקר ומיותר. רק לפי בקשת משתמש על נכס ספציפי</td></tr>
+        <tr><td><b>רמ״י</b></td><td>מקרקעי ישראל, חכירות, מכרזי קרקע</td><td><span class="tag ok">חינמי</span></td><td>לא כל נכס רשום בטאבו — חלק קיימים רק ברמ״י. חובה לבדוק את שני המקורות</td></tr>
+        <tr><td><b>GovMap / מפ״י</b></td><td>המרת כתובת לגוש/חלקה, גבולות חלקה, תצלומי אוויר</td><td><span class="tag ok">חינמי</span></td><td>הגבלות קצב; נדרש מטמון מקומי</td></tr>
+        <tr><td><b>מנהל התכנון / ועדות מקומיות</b></td><td>תוכניות חלות, תמ״א 38, פינוי־בינוי, זכויות בנייה</td><td><span class="tag ok">חינמי</span></td><td>איכות נתונים שונה בין רשויות; חלק מהוועדות ללא ממשק מובנה</td></tr>
+        <tr><td><b>למ״ס ורשויות מקומיות</b></td><td>מדד חברתי־כלכלי, תעריפי ארנונה, אזורי רישום</td><td><span class="tag ok">חינמי</span></td><td>תעריפי ארנונה מתעדכנים שנתית לכל רשות בנפרד</td></tr>
+        <tr><td><b>לוחות מודעות</b><br><span class="sub">יד2, מדלן ודומיהם</span></td><td>הנכסים שמוצעים כרגע בפועל — ללא זה אין מוצר</td><td><span class="tag crit">דורש הסכם</span></td><td><b>הנחת היסוד של האיפיון: לא מגרדים.</b> המסלול הוא API מסחרי או שותפות. גרידה מפרה תנאי שימוש ונשברת בכל שינוי עיצוב</td></tr>
+        <tr><td><b>קלט ישיר</b></td><td>מתווכים ובעלי נכסים שמעלים מלאי, וקובץ אקסל שמשתמש מעלה</td><td><span class="tag ok">בשליטתנו</span></td><td>הפתרון לתרנגולת־וביצה: מלאי ראשוני שאינו תלוי בצד שלישי</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="panel"><h3>אסטרטגיית המלאי המעשית</h3>
+      <p>שלב א׳ נבנה על מה שחוקי וזמין מיידית: כל השכבה הממשלתית + קלט ישיר ממתווכים + הדבקת קישור למודעה. המשתמש מדביק מודעה מלוח כלשהו, והסוכן מעשיר אותה לכרטיס מלא. זה נותן ערך אמיתי ביום הראשון בלי להיות תלוי בהסכם שטרם נחתם.</p>
+    </div>
+    <div class="panel"><h3>רעננות ותדירות</h3>
+      <div class="kv">
+        <dt>מודעות</dt><dd>כל 15 דקות (דלתא)</dd>
+        <dt>עסקאות נדל״ן</dt><dd>יומי</dd>
+        <dt>תוכניות ותכנון</dt><dd>שבועי</dd>
+        <dt>ארנונה ומדדים</dt><dd>שנתי</dd>
+        <dt>מדרגות מס</dt><dd>ידני, מול חוזר רשות המסים</dd>
+      </div>
+      <p class="sub">כל כרטיס מציג את ה-<span class="mono">asOf</span> של הנתון הישן ביותר שהוצג בו.</p>
+    </div>
+  </div>
+</section>
+
+<section id="calc">
+  <div class="sec-head"><span class="sec-num">08</span><h2>מנועי החישוב</h2></div>
+  <p class="sec-sub">ארבעה מנועים ממירים "מודעה" ל"החלטה". שלושתם הראשונים רצים בפרוטוטייפ למעלה על נתונים אמיתיים של מדרגות מס ומגבלות מימון.</p>
+
+  <h3 style="font-size:17px;margin-bottom:8px">מס רכישה — חמישה מסלולים</h3>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>מסלול</th><th>מדרגות (₪)</th><th>הערה מכרעת</th></tr></thead>
+      <tbody>
+        <tr><td><b>דירה יחידה</b></td><td class="mono">0 · 1,978,745 → 3.5% · 2,347,040 → 5% · 6,055,070 → 8% · 20,183,565 → 10%</td><td>הסכומים הוקפאו בחוק ההסדרים 2025 ומוקפאים עד 15.1.2028</td></tr>
+        <tr><td><b>דירה נוספת</b></td><td class="mono">8% משקל ראשון · מעל 6,055,070 → 10%</td><td>הוראת שעה בתוקף עד 31.12.2026 — חובה לאמת הארכה לפני ציטוט ב-2027</td></tr>
+        <tr><td><b>משפר דיור</b></td><td class="mono">מדרגות דירה יחידה</td><td>בתנאי מכירת הדירה הקיימת בחלון הסטטוטורי (ככלל 24 חודשים; 12 חודשים מקבלן ממועד המסירה). הטעות הנפוצה ביותר בשוק</td></tr>
+        <tr><td><b>עולה חדש</b></td><td class="mono">0 · 1,978,745 → 0.5% · 6,055,070 → 8%</td><td>תקנה 12א. <b>תקרת שווי:</b> מעל 20,183,565 ₪ ההקלה כלל לא חלה והחישוב חוזר למדרגות הרגילות על מלוא השווי</td></tr>
+        <tr><td><b>תקנה 11</b></td><td class="mono">דירה יחידה עד 2.5 מ׳: 0% עד 1,978,745 ואז 0.5% · אחרת: 0.5% על מלוא השווי</td><td>2,500,000 ₪ הוא <b>מצוק ולא מדרגה</b>: שקל אחד מעל, והחיוב הוא 0.5% על הכול. ההטבה ניתנת פעמיים בחיים ודורשת בקשה מראש</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g3" style="margin-top:16px">
+    <div class="panel"><h3>מימון והון עצמי</h3>
+      <p>מגבלות בנק ישראל: עד 75% לדירה יחידה, 70% למשפר דיור, 50% להשקעה. מהן נגזר ההון העצמי הנדרש, וההחזר החודשי מחושב בלוח שפיצר על ריבית שהמשתמש יכול לשנות.</p>
+      <p class="sub">"הון עצמי חסר" הוא הפילטר הכי שימושי שאף לוח לא מציע.</p>
+    </div>
+    <div class="panel"><h3>תשואה</h3>
+      <p>ברוטו = שכ״ד שנתי חלקי מחיר. נטו = שכ״ד בניכוי ועד בית, ביטוח, תחזוקה ותקופות ריקות, חלקי <b>עלות הרכישה הכוללת</b> כולל מס רכישה ועלויות סגירה — לא חלקי המחיר.</p>
+      <p class="sub">תקרת הפטור ממס על הכנסה משכירות היא פרמטר מערכת שמתעדכן שנתית, ומסומן <span class="tag warn">לאימות</span> עד עדכון ידני.</p>
+    </div>
+    <div class="panel"><h3>פער מול האזור</h3>
+      <p>חציון מחיר למ״ר מעסקאות נדל״ן ברדיוס ובחלון זמן, בתקנון גס לשטח ולשנת בנייה. מוצג כטווח, לא כמספר יחיד.</p>
+      <p class="sub">זו אינדיקציה בלבד ולא שומה: אין ביקור בנכס ואין את התאמות שיטת ההשוואה שהחוק דורש משמאי.</p>
+    </div>
+  </div>
+  <div class="note" style="margin-top:14px"><b>כלל מוצרי קשיח:</b> כל סכום מס מוצג עם המילה "משוער", עם פירוט המדרגות שממנו נגזר, ועם קישור לסימולטור של רשות המסים. המערכת לא מציגה מספר מס בלי להראות איך הגיעה אליו.</div>
+</section>
+
+<section id="rank">
+  <div class="sec-head"><span class="sec-num">09</span><h2>מנוע ההתאמה והדירוג</h2></div>
+  <p class="sec-sub">ציון 0–100 שמורכב משלושה רכיבים, ותמיד מלווה בנימוקים. הפילטרים הקשיחים מסננים; הציון מסדר.</p>
+  <div class="grid g3">
+    <div class="panel"><h3>60% — התאמה לבקשה</h3><p>כמה טוב הנכס עונה על מה שנאמר במפורש: חדרים, שטח, מיקום, מאפיינים מבוקשים. חריגה קלה ממחיר לא פוסלת אלא מורידה ניקוד, כדי לא להסתיר נכס טוב שחורג ב-2%.</p></div>
+    <div class="panel"><h3>25% — איכות העסקה</h3><p>פער מול חציון האזור, תשואה, ירידת מחיר, ימים בשוק, ומפרסם פרטי מול תיווך. הרכיב שמוסיף ערך מעבר לסינון.</p></div>
+    <div class="panel"><h3>15% — איכות המידע</h3><p>נכס עם גוש/חלקה מאומת, עסקאות השוואה ותמונות מדורג גבוה יותר מנכס עם שלוש שורות טקסט. זה גם תמריץ ישיר למפרסמים להשלים נתונים.</p></div>
+  </div>
+  <div class="note" style="margin-top:14px"><b>עונשים מפורשים:</b> דגל אדום פעיל מוריד 25 נקודות ולעולם לא מסתיר את הנכס — המשתמש רואה למה זה בעייתי ומחליט בעצמו. מודעה כפולה מאותו נכס בשני לוחות מאוחדת לכרטיס אחד עם שני מקורות, ומחיר סותר בין השניים הוא בעצמו דגל.</div>
+</section>
+
+<section id="flows">
+  <div class="sec-head"><span class="sec-num">10</span><h2>זרימות המשתמש</h2></div>
+  <p class="sec-sub">שלוש זרימות מרכזיות. שתי הראשונות הן המוצר; השלישית היא מה שהופך אותו מכלי חד־פעמי למנוי.</p>
+  <h3 style="font-size:17px;margin-bottom:9px">א. מחיפוש להחלטה</h3>
+  <div class="flow">
+    <div class="step"><span class="n">01</span><div><b>הגדרת פרופיל</b><p>פרסונה, תקציב, הון עצמי, סטטוס בעלות קיימת. שלושים שניות, ומכאן כל חישובי המס והמימון אישיים.</p></div></div>
+    <div class="step"><span class="n">02</span><div><b>שאילתה חופשית</b><p>המשתמש כותב משפט. הסוכן מציג את הפרשנות כצ׳יפים ניתנים לעריכה לפני שהוא מחפש.</p></div></div>
+    <div class="step"><span class="n">03</span><div><b>תוצאות מדורגות</b><p>כרטיסים עם ציון ונימוקים. כוונון בפילטרים או במשפט המשך: "בלי קומת קרקע".</p></div></div>
+    <div class="step"><span class="n">04</span><div><b>העמקה בכרטיס</b><p>פתיחת מגירות: עלות חודשית, מס, רישום, עסקאות השוואה.</p></div></div>
+    <div class="step"><span class="n">05</span><div><b>השוואה</b><p>עד 4 נכסים בטבלה אחת עם כל השדות זה מול זה, כולל סה״כ עלות כניסה.</p></div></div>
+    <div class="step"><span class="n">06</span><div><b>דוח נכס</b><p>PDF לסיור או לעורך הדין: כל הנתונים, המקורות, הדגלים ורשימת הבדיקות שנותרו — כולל הזמנת נסח טאבו.</p></div></div>
+  </div>
+  <h3 style="font-size:17px;margin:22px 0 9px">ב. התראה יזומה</h3>
+  <div class="flow">
+    <div class="step"><span class="n">01</span><div><b>שמירת חיפוש</b><p>הפילטרים הופכים ל"מנדט" עם סף ציון מינימלי.</p></div></div>
+    <div class="step"><span class="n">02</span><div><b>הסוכן רץ ברקע</b><p>נכס חדש שעובר את הסף, או ירידת מחיר בנכס שמור, מייצרים התראה.</p></div></div>
+    <div class="step"><span class="n">03</span><div><b>התראה עם נימוק</b><p>לא "נכס חדש" אלא "ירד ב-190 אלף אחרי 84 יום, ועכשיו 11% מתחת לחציון".</p></div></div>
+  </div>
+  <h3 style="font-size:17px;margin:22px 0 9px">ג. הדבקת מודעה חיצונית</h3>
+  <div class="flow">
+    <div class="step"><span class="n">01</span><div><b>המשתמש מדביק קישור או טקסט</b><p>מכל לוח, מקבוצת ווטסאפ, או מצילום מסך.</p></div></div>
+    <div class="step"><span class="n">02</span><div><b>חילוץ והעשרה</b><p>הסוכן מזהה כתובת, ממיר לגוש/חלקה, שולף עסקאות השוואה ותוכניות, ומחשב הכול.</p></div></div>
+    <div class="step"><span class="n">03</span><div><b>כרטיס מלא</b><p>אותו כרטיס בדיוק — וזה גם הערוץ שמייצר מלאי בלי תלות בהסכם עם לוח.</p></div></div>
+  </div>
+</section>
+
+<section id="roadmap">
+  <div class="sec-head"><span class="sec-num">11</span><h2>אבני דרך</h2></div>
+  <p class="sec-sub">סדר שנבחר כך שכל שלב עומד בפני עצמו, ושהסיכון המשפטי הגדול ביותר — תלות בלוחות — נדחה עד שיש מה להראות לשותף פוטנציאלי.</p>
+  <div class="grid g2">
+    <div class="phase"><div class="h"><h3>שלב א׳ — הכרטיס</h3><span class="when">4–6 שבועות</span></div>
+      <ul class="clean"><li>מודל הנתונים והמנוע הרשמי (נדל״ן, GovMap, רמ״י)</li><li>מחשבוני מס רכישה, מימון ותשואה — חמשת המסלולים</li><li>כרטיס דו־שכבתי מלא</li><li>הדבקת מודעה חיצונית כערוץ קלט יחיד</li></ul>
+      <p class="sub"><b>מדד הצלחה:</b> משתמש מדביק מודעה ומקבל תוך 10 שניות כרטיס שחוסך לו שעה של בדיקות.</p></div>
+    <div class="phase"><div class="h"><h3>שלב ב׳ — החיפוש</h3><span class="when">6–8 שבועות</span></div>
+      <ul class="clean"><li>מלאי מקלט ישיר של מתווכים ובעלי נכסים</li><li>שאילתה בשפה חופשית + פילטרים מלאים</li><li>מנוע דירוג ונימוקים</li><li>שמירה, השוואה והתראות</li></ul>
+      <p class="sub"><b>מדד הצלחה:</b> שיעור פתיחת מגירות בכרטיס מעל 40% — סימן שהעומק נצרך ולא מעמיס.</p></div>
+    <div class="phase"><div class="h"><h3>שלב ג׳ — כיסוי</h3><span class="when">תלוי הסכמים</span></div>
+      <ul class="clean"><li>API מסחרי מול לוח מודעות</li><li>איחוד כפילויות בין מקורות</li><li>דוח נכס PDF ושיתוף עם עו״ד</li><li>אפליקציה ניידת</li></ul>
+      <p class="sub"><b>תנאי כניסה:</b> בסיס משתמשים שמצדיק הסכם. לא מתחילים כאן.</p></div>
+    <div class="phase"><div class="h"><h3>שלב ד׳ — סוכן יזום</h3><span class="when">המשך</span></div>
+      <ul class="clean"><li>ניטור רציף וזיהוי הזדמנויות</li><li>ניתוח פוטנציאל התחדשות עירונית לפי תוכניות</li><li>הערכת עלות שיפוץ מתמונות</li><li>ליווי תהליך הרכישה מול רשימת המשימות</li></ul>
+      <p class="sub"><b>מדד הצלחה:</b> משתמש שסוגר עסקה מנכס שהסוכן מצא לו ביוזמתו.</p></div>
+  </div>
+</section>
+
+<section id="risks">
+  <div class="sec-head"><span class="sec-num">12</span><h2>סיכונים, נגישות ומסגרת משפטית</h2></div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>סיכון</th><th>חומרה</th><th>מענה באיפיון</th></tr></thead>
+      <tbody>
+        <tr><td>אין גישה חוקית למלאי הלוחות</td><td><span class="tag crit">גבוהה</span></td><td>שלב א׳ לא תלוי בהם כלל; ערוץ ההדבקה והקלט הישיר מייצרים ערך עצמאי</td></tr>
+        <tr><td>המשתמש יתייחס להערכת שווי כשומה</td><td><span class="tag crit">גבוהה</span></td><td>טווח ולא מספר, המילה "משוער" בכל תצוגה, וכתב ויתור קבוע בתחתית כל כרטיס ודוח</td></tr>
+        <tr><td>מדרגות מס משתנות בחקיקה</td><td><span class="tag warn">בינונית</span></td><td>המדרגות הן קובץ תצורה עם תאריך תוקף; המערכת מתריעה כשחלון התוקף מתקרב לפקוע (הוראת השעה לדירה נוספת — 31.12.2026)</td></tr>
+        <tr><td>נתוני נדל״ן מפגרים אחרי השוק</td><td><span class="tag warn">בינונית</span></td><td>תאריך העסקה האחרונה מוצג במפורש; בשוק דליל מוצג "מדגם קטן" במקום אחוז מדויק</td></tr>
+        <tr><td>עומס מידע בכרטיס</td><td><span class="tag warn">בינונית</span></td><td>המבנה הדו־שכבתי; מדידת שיעור פתיחת מגירות ככלי לאיזון</td></tr>
+        <tr><td>הטיה כלפי מפרסמים משלמים</td><td><span class="tag warn">בינונית</span></td><td>מודעה ממומנת מסומנת ככזו ולא נכנסת לדירוג האורגני — לעולם</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="panel"><h3>נגישות — לא תוספת</h3>
+      <ul class="clean">
+        <li>עברית RTL מלאה, כולל מספרים, טווחים וסימני אחוז</li>
+        <li>תקן ישראלי 5568 ו-WCAG 2.1 AA: ניגודיות, ניווט מקלדת מלא, מיקוד נראה</li>
+        <li>כל דגל נושא טקסט ולא רק צבע</li>
+        <li>קורא מסך: הכרטיס נקרא בסדר הגיוני — כותרת, מחיר, מספרי ליבה, דגלים</li>
+        <li>תמיכה בערבית ובאנגלית בשלב ב׳</li>
+      </ul>
+    </div>
+    <div class="panel"><h3>פרטיות ורגולציה</h3>
+      <ul class="clean">
+        <li>הון עצמי, הכנסה וסטטוס בעלות הם מידע רגיש — מוצפנים ולא משותפים עם מפרסמים</li>
+        <li>עמידה בחוק הגנת הפרטיות ותקנות אבטחת מידע</li>
+        <li>אין ייעוץ משכנתאות בתשלום ללא רישוי מתאים</li>
+        <li>אין תיווך בפועל ללא רישיון תיווך — המוצר הוא כלי מידע</li>
+        <li>נכס להשכרה נבדק מול חוק השכירות (שכירות הוגנת) לפני הצגת תנאים</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note legal" style="margin-top:16px">
+    <b style="display:block;margin-bottom:5px">כתב ויתור — חלק בלתי נפרד מהמוצר, לא מהמסמך בלבד</b>
+    כלי המידע מופעל על ידי מודל בינה מלאכותית. כל תוצריו נוצרים אוטומטית, ללא מעורבות, בדיקה או אישור של שמאי מקרקעין מוסמך, עורך דין או יועץ מס. הפלט אינו שומת מקרקעין, אינו חוות דעת מקצועית ואינו ייעוץ משפטי או מיסויי, אלא מידע כללי בלבד: הוא אינו כולל ביקור בנכס, אינו מבצע את התאמות שיטת ההשוואה הנדרשות, ואינו בוחן את מסמכי העסקה הספציפית. מודל בינה מלאכותית עלול לטעות, להשמיט נתונים או להציג מסקנה שגויה. אין להציג את הפלט כשומה מוסמכת, אין להסתמך עליו כראיה ואין להגישו לבית משפט או לרשות. הערכת שווי מחייבת דורשת שמאי מוסמך, עסקת מקרקעין דורשת עורך דין, וחישוב מס מחייב דורש יועץ מס או רואה חשבון. השימוש באחריות המשתמש בלבד.
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="foot-inner">
+    מפתח נכסים · איפיון מוצר גרסה 0.9 · ספטמבר 2026 · הנתונים בפרוטוטייפ הם דוגמה להמחשה ואינם מלאי אמיתי. מדרגות מס הרכישה נכונות לחוזר מס רכישה 1/2026 של רשות המסים ויש לאמתן מול המקור לפני כל שימוש.
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ===== formatting ===== */
+var nf = new Intl.NumberFormat('he-IL');
+function shekel(n){ return '₪' + nf.format(Math.round(n)); }
+function short(n){
+  if(n >= 1000000) return '₪' + (n/1000000).toFixed(n % 1000000 === 0 ? 0 : 2).replace(/\.00$/,'') + 'M';
+  if(n >= 1000) return '₪' + Math.round(n/1000) + 'K';
+  return shekel(n);
+}
+function pct(x, d){ return (x*100).toFixed(d === undefined ? 1 : d) + '%'; }
+
+/* ===== purchase tax — Israel Tax Authority circular 1/2026 (frozen 16.1.2025 amounts) ===== */
+var T = { A:1978745, B:2347040, C:6055070, D:20183565, REG11_CAP:2500000 };
+function applyBrackets(price, brackets){
+  var out = [], tax = 0;
+  for(var i=0;i<brackets.length;i++){
+    var b = brackets[i];
+    var lo = b[0], hi = b[1], rate = b[2];
+    if(price <= lo) break;
+    var part = Math.min(price, hi) - lo;
+    var amt = part * rate;
+    tax += amt;
+    out.push({from:lo, to:hi, rate:rate, base:part, amount:amt});
+  }
+  return {amount:tax, brackets:out};
+}
+var SINGLE = [[0,T.A,0],[T.A,T.B,.035],[T.B,T.C,.05],[T.C,T.D,.08],[T.D,Infinity,.10]];
+var ADDITIONAL = [[0,T.C,.08],[T.C,Infinity,.10]];
+var OLEH = [[0,T.A,0],[T.A,T.C,.005],[T.C,T.D,.08]];
+
+function purchaseTax(price, profile){
+  if(profile === 'single' || profile === 'upgrade') return applyBrackets(price, SINGLE);
+  if(profile === 'additional') return applyBrackets(price, ADDITIONAL);
+  if(profile === 'oleh'){
+    /* Regulation 12a relief has a value ceiling: above it the ordinary ladder applies to the FULL price */
+    if(price > T.D){ var r = applyBrackets(price, SINGLE); r.ceilingLost = true; return r; }
+    return applyBrackets(price, OLEH);
+  }
+  if(profile === 'reg11'){
+    /* 2.5M is a cliff, not a bracket edge */
+    if(price <= T.REG11_CAP) return applyBrackets(price, [[0,T.A,0],[T.A,Infinity,.005]]);
+    var flat = applyBrackets(price, [[0,Infinity,.005]]); flat.cliff = true; return flat;
+  }
+  return applyBrackets(price, SINGLE);
+}
+var PROFILE_LABEL = {
+  single:'דירה יחידה', upgrade:'משפר דיור', additional:'דירה נוספת / השקעה',
+  oleh:'עולה חדש — תקנה 12א', reg11:'זכאי תקנה 11'
+};
+var LTV = { single:.75, upgrade:.70, additional:.50, oleh:.75, reg11:.75 };
+
+/* ===== finance ===== */
+var RATE = 0.049, YEARS = 25;
+function monthlyPayment(principal){
+  if(principal <= 0) return 0;
+  var r = RATE/12, n = YEARS*12;
+  return principal * r / (1 - Math.pow(1+r, -n));
+}
+function closingCosts(price, p){
+  var lawyer = Math.max(6000, price * 0.005);
+  var agent = p.listing.publisher.kind === 'agency' ? price * (p.listing.publisher.feePct/100) * 1.17 : 0;
+  var appraiser = 2400, misc = 1800;
+  return {lawyer:lawyer, agent:agent, appraiser:appraiser, misc:misc, total:lawyer+agent+appraiser+misc};
+}
+function economics(p, profile){
+  var e = {};
+  e.ppsm = p.deal === 'sale' ? p.price / p.asset.sqm : null;
+  e.delta = e.ppsm ? (e.ppsm - p.market.areaMedianPpsm) / p.market.areaMedianPpsm : null;
+  if(p.deal === 'sale'){
+    e.tax = purchaseTax(p.price, profile);
+    e.closing = closingCosts(p.price, p);
+    e.acquisition = p.price + e.tax.amount + e.closing.total;
+    e.ltv = LTV[profile];
+    e.loan = p.price * e.ltv;
+    e.equity = e.acquisition - e.loan;
+    e.monthlyMortgage = monthlyPayment(e.loan);
+    e.rentExpected = p.market.expectedMonthlyRent;
+    e.grossYield = e.rentExpected * 12 / p.price;
+    var vacancy = e.rentExpected * 12 * 0.04;
+    var upkeep = e.rentExpected * 12 * 0.05;
+    var insurance = 1250;
+    e.netYield = (e.rentExpected*12 - vacancy - upkeep - insurance - p.costs.vaad*12) / e.acquisition;
+    e.monthlyAllIn = e.monthlyMortgage + p.costs.arnona + p.costs.vaad;
+  } else {
+    e.monthlyAllIn = p.price + p.costs.arnona + p.costs.vaad + p.costs.utilities;
+    e.deposit = p.price * p.rent.depositMonths;
+  }
+  return e;
+}
+
+/* ===== sample inventory (illustrative, not real listings) ===== */
+var TYPES = {
+  apartment:'דירה', garden:'דירת גן', penthouse:'פנטהאוז', studio:'סטודיו',
+  housingUnit:'יחידת דיור', house:'בית פרטי', duplex:'דו־משפחתי'
+};
+var COND = { new:'חדש', renovated:'משופץ', kept:'שמור', needsWork:'דורש שיפוץ' };
+var P = [
+ {id:'p1', deal:'sale', price:3150000,
+  listing:{source:'יד2', publishedAt:'2026-07-02', daysOnMarket:77, publisher:{kind:'agency', feePct:2}, priceDrop:240000, availableFrom:'2026-11-01'},
+  location:{city:'תל אביב-יפו', neighborhood:'פלורנטין', street:'ויטל 14', gush:7025, helka:88, tat:12, walk:{transit:4, school:9, park:6}},
+  asset:{type:'apartment', rooms:3, sqm:72, balcony:6, floor:2, floors:4, builtYear:1958, condition:'renovated', aspects:'דרום־מזרח',
+    f:{elevator:false, parking:0, storage:false, mamad:false, ac:'מיני מרכזי', accessible:false, furnished:false, bars:true, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:1, verified:true, splitPermit:null},
+  planning:{renewal:'תמ״א 38/2 — הריסה ובנייה', stage:'הוגשה בקשה להיתר', betterment:'בינונית'},
+  market:{areaMedianPpsm:49800, expectedMonthlyRent:7800, comps:[['06/2026',68,3280000],['03/2026',75,3720000],['11/2025',70,3410000]], asOf:'2026-09-01'},
+  costs:{arnona:640, vaad:190}},
+
+ {id:'p2', deal:'sale', price:5450000,
+  listing:{source:'מדלן', publishedAt:'2026-08-21', daysOnMarket:27, publisher:{kind:'private', feePct:0}, priceDrop:0, availableFrom:'2027-01-15'},
+  location:{city:'תל אביב-יפו', neighborhood:'רמת אביב ג׳', street:'ברודצקי 41', gush:6631, helka:204, tat:38, walk:{transit:6, school:5, park:3}},
+  asset:{type:'apartment', rooms:4, sqm:105, balcony:12, floor:7, floors:9, builtYear:2012, condition:'kept', aspects:'צפון־מערב',
+    f:{elevator:true, parking:1, storage:true, mamad:true, ac:'מרכזי', accessible:true, furnished:false, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:0, verified:true, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:'נמוכה'},
+  market:{areaMedianPpsm:53200, expectedMonthlyRent:11500, comps:[['07/2026',101,5390000],['05/2026',110,5980000],['02/2026',98,5150000]], asOf:'2026-09-01'},
+  costs:{arnona:920, vaad:480}},
+
+ {id:'p3', deal:'sale', price:1980000,
+  listing:{source:'יד2', publishedAt:'2026-06-14', daysOnMarket:95, publisher:{kind:'agency', feePct:2}, priceDrop:120000, availableFrom:'2026-12-01'},
+  location:{city:'חיפה', neighborhood:'אחוזה', street:'חורב 22', gush:10812, helka:57, tat:9, walk:{transit:5, school:7, park:4}},
+  asset:{type:'apartment', rooms:4, sqm:118, balcony:14, floor:3, floors:4, builtYear:1994, condition:'kept', aspects:'מערב — נוף לים',
+    f:{elevator:true, parking:1, storage:true, mamad:false, ac:'מפוצל', accessible:false, furnished:false, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:1, mortgages:1, verified:true, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:'נמוכה'},
+  market:{areaMedianPpsm:18400, expectedMonthlyRent:5600, comps:[['08/2026',115,2120000],['04/2026',120,2240000],['01/2026',108,1950000]], asOf:'2026-09-01'},
+  costs:{arnona:560, vaad:220}},
+
+ {id:'p4', deal:'sale', price:1320000,
+  listing:{source:'קלט ישיר', publishedAt:'2026-09-05', daysOnMarket:12, publisher:{kind:'private', feePct:0}, priceDrop:0, availableFrom:'2026-10-15'},
+  location:{city:'באר שבע', neighborhood:'רמות', street:'יצחק רגר 88', gush:38155, helka:12, tat:44, walk:{transit:3, school:6, park:8}},
+  asset:{type:'apartment', rooms:3.5, sqm:92, balcony:8, floor:5, floors:8, builtYear:2007, condition:'kept', aspects:'דרום',
+    f:{elevator:true, parking:1, storage:false, mamad:true, ac:'מרכזי', accessible:true, furnished:false, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:0, verified:true, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:'נמוכה'},
+  market:{areaMedianPpsm:14900, expectedMonthlyRent:4600, comps:[['08/2026',90,1355000],['06/2026',95,1420000],['02/2026',88,1290000]], asOf:'2026-09-01'},
+  costs:{arnona:410, vaad:160}},
+
+ {id:'p5', deal:'sale', price:1190000,
+  listing:{source:'יד2', publishedAt:'2026-05-30', daysOnMarket:110, publisher:{kind:'agency', feePct:2}, priceDrop:60000, availableFrom:'מיידי'},
+  location:{city:'רמת גן', neighborhood:'מרכז', street:'ביאליק 30', gush:6128, helka:341, tat:3, walk:{transit:2, school:11, park:7}},
+  asset:{type:'housingUnit', rooms:2, sqm:34, balcony:0, floor:0, floors:3, builtYear:1969, condition:'renovated', aspects:'מזרח',
+    f:{elevator:false, parking:0, storage:false, mamad:false, ac:'מפוצל', accessible:true, furnished:true, bars:true, separateEntrance:true}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:1, mortgages:0, verified:true, splitPermit:'unknown'},
+  planning:{renewal:'תמ״א 38/1 — חיזוק', stage:'בבדיקת יזם', betterment:'בינונית'},
+  market:{areaMedianPpsm:38600, expectedMonthlyRent:4600, comps:[['07/2026',38,1420000],['03/2026',33,1180000],['12/2025',36,1310000]], asOf:'2026-09-01'},
+  costs:{arnona:290, vaad:120}},
+
+ {id:'p6', deal:'sale', price:4300000,
+  listing:{source:'מדלן', publishedAt:'2026-08-02', daysOnMarket:46, publisher:{kind:'agency', feePct:1.5}, priceDrop:0, availableFrom:'2027-03-01'},
+  location:{city:'נתניה', neighborhood:'עיר ימים', street:'ניצנים 7', gush:8266, helka:119, tat:61, walk:{transit:9, school:4, park:2}},
+  asset:{type:'penthouse', rooms:5, sqm:132, balcony:38, floor:12, floors:16, builtYear:2016, condition:'kept', aspects:'מערב — נוף לים',
+    f:{elevator:true, parking:2, storage:true, mamad:true, ac:'מרכזי', accessible:true, furnished:false, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:1, verified:true, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:'נמוכה'},
+  market:{areaMedianPpsm:31000, expectedMonthlyRent:9200, comps:[['07/2026',128,4180000],['05/2026',140,4620000],['11/2025',125,3990000]], asOf:'2026-09-01'},
+  costs:{arnona:880, vaad:640}},
+
+ {id:'p7', deal:'sale', price:2890000,
+  listing:{source:'יד2', publishedAt:'2026-04-18', daysOnMarket:152, publisher:{kind:'private', feePct:0}, priceDrop:310000, availableFrom:'מיידי'},
+  location:{city:'ירושלים', neighborhood:'קטמון', street:'יהודה 19', gush:30045, helka:76, tat:2, walk:{transit:7, school:5, park:5}},
+  asset:{type:'garden', rooms:3, sqm:78, balcony:0, lot:40, floor:0, floors:3, builtYear:1967, condition:'needsWork', aspects:'דרום־מערב',
+    f:{elevator:false, parking:1, storage:true, mamad:false, ac:'מפוצל', accessible:true, furnished:false, bars:true, separateEntrance:true}},
+  registry:{kind:'חברה משכנת', tenure:'חכירה', leaseEnds:'2041', caveats:2, mortgages:1, verified:false, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:'גבוהה'},
+  market:{areaMedianPpsm:41500, expectedMonthlyRent:6900, comps:[['06/2026',80,3260000],['02/2026',74,3010000],['09/2025',85,3480000]], asOf:'2026-09-01'},
+  costs:{arnona:720, vaad:150}},
+
+ {id:'p8', deal:'sale', price:4950000,
+  listing:{source:'קלט ישיר', publishedAt:'2026-09-09', daysOnMarket:8, publisher:{kind:'agency', feePct:2}, priceDrop:0, availableFrom:'2027-02-01'},
+  location:{city:'ראשון לציון', neighborhood:'נחלת יהודה', street:'הרצל 55', gush:3928, helka:8, tat:null, walk:{transit:8, school:6, park:4}},
+  asset:{type:'house', rooms:6, sqm:180, balcony:20, lot:320, floor:0, floors:2, builtYear:2003, condition:'kept', aspects:'ארבעה כיווני אוויר',
+    f:{elevator:false, parking:2, storage:true, mamad:true, ac:'מרכזי', accessible:true, furnished:false, bars:false, separateEntrance:true}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:1, verified:true, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:'גבוהה'},
+  market:{areaMedianPpsm:26800, expectedMonthlyRent:10500, comps:[['08/2026',165,4610000],['05/2026',190,5250000],['01/2026',175,4780000]], asOf:'2026-09-01'},
+  costs:{arnona:1180, vaad:0}},
+
+ {id:'p9', deal:'sale', price:1180000,
+  listing:{source:'קלט ישיר', publishedAt:'2026-08-16', daysOnMarket:32, publisher:{kind:'private', feePct:0}, priceDrop:0, availableFrom:'2026-12-01'},
+  location:{city:'עפולה', neighborhood:'גילעד', street:'ארלוזורוב 24', gush:16752, helka:63, tat:18, walk:{transit:6, school:5, park:7}},
+  asset:{type:'apartment', rooms:4, sqm:95, balcony:11, floor:2, floors:4, builtYear:2009, condition:'kept', aspects:'צפון־דרום',
+    f:{elevator:true, parking:1, storage:true, mamad:true, ac:'מרכזי', accessible:true, furnished:false, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:0, verified:true, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:'נמוכה'},
+  market:{areaMedianPpsm:13200, expectedMonthlyRent:4300, comps:[['08/2026',92,1225000],['05/2026',98,1310000],['12/2025',90,1160000]], asOf:'2026-09-01'},
+  costs:{arnona:390, vaad:140}},
+  {id:'r1', deal:'rent', price:5400,
+  listing:{source:'יד2', publishedAt:'2026-09-08', daysOnMarket:9, publisher:{kind:'private', feePct:0}, priceDrop:0, availableFrom:'2026-10-01'},
+  location:{city:'תל אביב-יפו', neighborhood:'לב העיר', street:'מזא״ה 8', gush:6912, helka:44, tat:7, walk:{transit:2, school:12, park:5}},
+  asset:{type:'studio', rooms:1.5, sqm:28, balcony:3, floor:1, floors:3, builtYear:1962, condition:'renovated', aspects:'מזרח',
+    f:{elevator:false, parking:0, storage:false, mamad:false, ac:'מפוצל', accessible:false, furnished:true, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:0, verified:false, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:null},
+  rent:{depositMonths:2, minMonths:12, pets:false, fairRentLaw:true},
+  market:{areaMedianPpsm:0, areaMedianRent:5600, expectedMonthlyRent:5400, comps:[], asOf:'2026-09-01'},
+  costs:{arnona:380, vaad:140, utilities:320}},
+
+ {id:'r2', deal:'rent', price:5200,
+  listing:{source:'מדלן', publishedAt:'2026-08-27', daysOnMarket:21, publisher:{kind:'agency', feePct:1}, priceDrop:0, availableFrom:'2026-11-01'},
+  location:{city:'אשדוד', neighborhood:'רובע ט״ו', street:'הרצל 100', gush:2065, helka:31, tat:22, walk:{transit:5, school:4, park:3}},
+  asset:{type:'apartment', rooms:4, sqm:100, balcony:10, floor:6, floors:9, builtYear:2011, condition:'kept', aspects:'מערב',
+    f:{elevator:true, parking:1, storage:true, mamad:true, ac:'מרכזי', accessible:true, furnished:false, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:1, verified:false, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:null},
+  rent:{depositMonths:3, minMonths:12, pets:true, fairRentLaw:true},
+  market:{areaMedianPpsm:0, areaMedianRent:4900, expectedMonthlyRent:5200, comps:[], asOf:'2026-09-01'},
+  costs:{arnona:520, vaad:260, utilities:410}},
+
+ {id:'r3', deal:'rent', price:5900,
+  listing:{source:'יד2', publishedAt:'2026-09-12', daysOnMarket:5, publisher:{kind:'private', feePct:0}, priceDrop:0, availableFrom:'מיידי'},
+  location:{city:'פתח תקווה', neighborhood:'כפר גנים', street:'העצמאות 12', gush:6376, helka:180, tat:15, walk:{transit:4, school:3, park:2}},
+  asset:{type:'apartment', rooms:3, sqm:75, balcony:8, floor:4, floors:7, builtYear:2004, condition:'renovated', aspects:'דרום',
+    f:{elevator:true, parking:1, storage:false, mamad:true, ac:'מרכזי', accessible:true, furnished:false, bars:false, separateEntrance:false}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:0, verified:false, splitPermit:null},
+  planning:{renewal:null, stage:null, betterment:null},
+  rent:{depositMonths:2, minMonths:12, pets:false, fairRentLaw:true},
+  market:{areaMedianPpsm:0, areaMedianRent:6100, expectedMonthlyRent:5900, comps:[], asOf:'2026-09-01'},
+  costs:{arnona:480, vaad:210, utilities:350}},
+
+ {id:'r4', deal:'rent', price:4300,
+  listing:{source:'קלט ישיר', publishedAt:'2026-09-01', daysOnMarket:16, publisher:{kind:'private', feePct:0}, priceDrop:0, availableFrom:'2026-10-01'},
+  location:{city:'רמת גן', neighborhood:'מרכז', street:'ז׳בוטינסקי 64', gush:6128, helka:355, tat:5, walk:{transit:3, school:9, park:6}},
+  asset:{type:'housingUnit', rooms:2, sqm:36, balcony:0, floor:0, floors:3, builtYear:1971, condition:'renovated', aspects:'צפון',
+    f:{elevator:false, parking:0, storage:false, mamad:false, ac:'מפוצל', accessible:true, furnished:true, bars:true, separateEntrance:true}},
+  registry:{kind:'טאבו', tenure:'בעלות', leaseEnds:null, caveats:0, mortgages:0, verified:false, splitPermit:'unknown'},
+  planning:{renewal:null, stage:null, betterment:null},
+  rent:{depositMonths:2, minMonths:12, pets:false, fairRentLaw:true},
+  market:{areaMedianPpsm:0, areaMedianRent:4500, expectedMonthlyRent:4300, comps:[], asOf:'2026-09-01'},
+  costs:{arnona:260, vaad:0, utilities:300}}
+];
+
+/* ===== flags — what a listing will not tell you ===== */
+function flags(p, e){
+  var out = [];
+  if(p.registry.splitPermit === 'unknown')
+    out.push({k:'crit', t:'יחידת דיור — לא אותר היתר פיצול. בלי היתר, בנק עלול לסרב למשכנתא והעירייה רשאית להוציא צו.'});
+  if(p.registry.tenure === 'חכירה' && p.registry.leaseEnds)
+    out.push({k:'warn', t:'חכירה עד ' + p.registry.leaseEnds + ' — לבדוק יתרת חכירה ודמי היוון לפני משכנתא.'});
+  if(p.registry.kind === 'חברה משכנת')
+    out.push({k:'warn', t:'הזכויות רשומות בחברה משכנת ולא בטאבו — רישום העברה איטי ויקר יותר.'});
+  if(p.registry.caveats > 0)
+    out.push({k:'warn', t:p.registry.caveats + ' הערות אזהרה רשומות — לבדוק מהותן בנסח.'});
+  if(!p.registry.verified)
+    out.push({k:'warn', t:'הרישום לא אומת מול נסח טאבו. הזמנת נסח היא הפעולה הבאה.'});
+  if(e.delta !== null && e.delta < -0.18)
+    out.push({k:'warn', t:'מחיר נמוך ב־' + Math.round(Math.abs(e.delta)*100) + '% מחציון האזור. פער כזה בדרך כלל מוסבר — לברר לפני התלהבות.'});
+  if(p.asset.builtYear < 1992 && !p.asset.f.mamad)
+    out.push({k:'warn', t:'אין ממ״ד (בניין משנת ' + p.asset.builtYear + ').'});
+  if(p.asset.floor >= 3 && !p.asset.f.elevator)
+    out.push({k:'warn', t:'קומה ' + p.asset.floor + ' ללא מעלית.'});
+  if(p.planning.betterment === 'גבוהה')
+    out.push({k:'warn', t:'חשיפה להיטל השבחה — קיימות זכויות בנייה לא מנוצלות.'});
+  if(p.listing.daysOnMarket > 90)
+    out.push({k:'warn', t:p.listing.daysOnMarket + ' ימים בשוק — מרחב למשא ומתן, ואולי גם סיבה.'});
+  if(p.listing.priceDrop > 0)
+    out.push({k:'ok', t:'ירד ב־' + shekel(p.listing.priceDrop) + ' מאז הפרסום.'});
+  if(p.planning.renewal)
+    out.push({k:'ok', t:p.planning.renewal + ' · ' + p.planning.stage + '.'});
+  if(e.delta !== null && e.delta <= -0.06 && e.delta >= -0.18)
+    out.push({k:'ok', t:'מתומחר ' + Math.round(Math.abs(e.delta)*100) + '% מתחת לחציון האזור.'});
+  if(p.deal === 'rent' && p.rent && p.rent.fairRentLaw)
+    out.push({k:'ok', t:'חוק השכירות ההוגנת חל — פיקדון מוגבל ותיקונים באחריות המשכיר.'});
+  return out;
+}
+
+/* ===== scoring ===== */
+function score(p, e, q){
+  var s = 52, why = [];
+  if(q.rooms && p.asset.rooms >= q.rooms){ s += 8; why.push(p.asset.rooms + ' חדרים'); }
+  if(q.city && p.location.city === q.city){ s += 8; why.push(p.location.neighborhood); }
+  if(q.sizeMin && p.asset.sqm >= q.sizeMin){ s += 5; why.push(p.asset.sqm + ' מ״ר'); }
+  var need = q.features || [];
+  for(var i=0;i<need.length;i++){
+    var k = need[i];
+    if(k === 'parking' ? p.asset.f.parking > 0 : p.asset.f[k]){ s += 5; why.push(FEATURE_LABEL[k]); }
+  }
+  if(q.pmax && p.price <= q.pmax){ s += 6; }
+  if(e.delta !== null){
+    if(e.delta <= -0.10){ s += 12; why.push(Math.round(Math.abs(e.delta)*100) + '% מתחת לחציון'); }
+    else if(e.delta <= -0.03){ s += 6; }
+    else if(e.delta > 0.08){ s -= 8; }
+  }
+  if(e.grossYield){
+    if(e.grossYield >= 0.045){ s += 9; why.push('תשואה ' + pct(e.grossYield)); }
+    else if(e.grossYield >= 0.035){ s += 4; }
+  }
+  if(p.listing.priceDrop > 0){ s += 5; why.push('ירידת מחיר'); }
+  if(p.listing.publisher.kind === 'private'){ s += 3; why.push('ללא דמי תיווך'); }
+  if(p.registry.verified) s += 4;
+  if(p.market.comps && p.market.comps.length >= 3) s += 4;
+  if(p.registry.splitPermit === 'unknown') s -= 25;
+  if(p.registry.kind === 'חברה משכנת') s -= 8;
+  if(!p.registry.verified) s -= 4;
+  return {n:Math.max(8, Math.min(99, Math.round(s))), why:why.slice(0,3)};
+}
+var FEATURE_LABEL = {elevator:'מעלית', parking:'חניה', mamad:'ממ״ד', balcony:'מרפסת', storage:'מחסן',
+  accessible:'גישה לנכים', furnished:'מרוהט', separateEntrance:'כניסה נפרדת'};
+
+/* ===== Hebrew query parsing ===== */
+var CITIES = [];
+(function(){ var seen = {}; P.forEach(function(p){ if(!seen[p.location.city]){ seen[p.location.city]=1; CITIES.push(p.location.city);} }); })();
+var CITY_ALIASES = {'תל אביב':'תל אביב-יפו','ת״א':'תל אביב-יפו','תא':'תל אביב-יפו','ת"א':'תל אביב-יפו','ירושלים':'ירושלים','חיפה':'חיפה','באר שבע':'באר שבע','ב״ש':'באר שבע','רמת גן':'רמת גן','נתניה':'נתניה','ראשון לציון':'ראשון לציון','אשדוד':'אשדוד','פתח תקווה':'פתח תקווה'};
+var TYPE_WORDS = [['יחידת דיור','housingUnit'],['סטודיו','studio'],['פנטהאוז','penthouse'],['דירת גן','garden'],['בית פרטי','house'],['דו משפחתי','duplex']];
+var FEATURE_WORDS = [['מעלית','elevator'],['חניה','parking'],['חנייה','parking'],['ממ״ד','mamad'],['ממד','mamad'],['ממ"ד','mamad'],['מרפסת','balcony'],['מחסן','storage'],['מרוהט','furnished'],['כניסה נפרדת','separateEntrance'],['נגיש','accessible']];
+
+function parseQuery(text){
+  var q = {};
+  var t = text.replace(/[,]/g,' ');
+  if(/שכירות|להשכרה|לשכור|שוכר/.test(t)) q.deal = 'rent';
+  if(/למכירה|לקנות|לרכוש/.test(t)) q.deal = 'sale';
+  if(/להשקעה|משקיע|תשואה/.test(t)){ if(!q.deal) q.deal = 'sale'; q.investor = true; }
+
+  for(var a in CITY_ALIASES){ if(t.indexOf(a) > -1){ q.city = CITY_ALIASES[a]; break; } }
+  if(!q.city) for(var i=0;i<CITIES.length;i++){ if(t.indexOf(CITIES[i]) > -1){ q.city = CITIES[i]; break; } }
+
+  var rm = t.match(/(\d+(?:[.,]\d)?)\s*חדר/);
+  if(rm) q.rooms = parseFloat(rm[1].replace(',','.'));
+
+  for(var j=0;j<TYPE_WORDS.length;j++){ if(t.indexOf(TYPE_WORDS[j][0]) > -1){ q.type = TYPE_WORDS[j][1]; break; } }
+
+  var pm = t.match(/(?:עד|מתחת ל|לא יותר מ)\s*([\d.,]+)\s*(מיליון|מליון|אלף|מ׳|k|K)?/);
+  if(pm){
+    var v = parseFloat(pm[1].replace(/,/g,''));
+    var unit = pm[2] || '';
+    if(/מיליון|מליון|מ׳/.test(unit)) v *= 1000000;
+    else if(/אלף|k|K/.test(unit)) v *= 1000;
+    else if(v < 100 && v > 0) v *= 1000000;
+    q.pmax = v;
+    if(v <= 30000 && !q.deal) q.deal = 'rent';
+    if(v > 50000 && !q.deal) q.deal = 'sale';
+  }
+  var sm = t.match(/(\d+)\s*מ[״"׳']?ר/);
+  if(sm) q.sizeMin = parseInt(sm[1], 10);
+
+  var ym = t.match(/תשואה\s*(?:מעל|מ־|מ-|לפחות)?\s*([\d.]+)\s*%?/);
+  if(ym) q.yieldMin = parseFloat(ym[1]) / 100;
+
+  var feats = [];
+  for(var k=0;k<FEATURE_WORDS.length;k++){
+    if(t.indexOf(FEATURE_WORDS[k][0]) > -1 && feats.indexOf(FEATURE_WORDS[k][1]) < 0) feats.push(FEATURE_WORDS[k][1]);
+  }
+  if(feats.length) q.features = feats;
+  return q;
+}
+
+/* ===== procedural facade (no external images allowed, and a broker photo is not data) ===== */
+function seeded(s){ var h = 0; for(var i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) | 0; return function(){ h = (h*1103515245 + 12345) | 0; return ((h >>> 16) & 0x7fff) / 0x7fff; }; }
+function facade(p){
+  var rnd = seeded(p.id + p.location.street);
+  var floors = Math.max(2, p.asset.floors), cols = p.asset.type === 'house' ? 3 : Math.min(6, Math.max(3, Math.round(p.asset.sqm/22)));
+  var W = 320, H = 180, bw = Math.min(250, 40 + cols*34), bh = Math.min(140, 30 + floors*16);
+  var bx = (W-bw)/2, by = H - bh - 12;
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="איור סכמטי של הבניין: ' + floors + ' קומות, הדירה בקומה ' + p.asset.floor + '">';
+  s += '<defs><linearGradient id="sky' + p.id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--surface-3)"/><stop offset="1" stop-color="var(--surface-2)"/></linearGradient></defs>';
+  s += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="url(#sky' + p.id + ')"/>';
+  s += '<rect x="0" y="' + (H-12) + '" width="' + W + '" height="12" fill="var(--line)"/>';
+  s += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="var(--surface)" stroke="var(--line)" stroke-width="1.5"/>';
+  var fh = bh / floors, cw = bw / cols;
+  for(var f=0; f<floors; f++){
+    var levelFromBottom = f;
+    var isMine = (levelFromBottom === Math.min(floors-1, p.asset.floor));
+    for(var c=0; c<cols; c++){
+      var wx = bx + c*cw + cw*0.22, wy = by + bh - (f+1)*fh + fh*0.25;
+      var ww = cw*0.56, wh = fh*0.5;
+      var lit = isMine ? 1 : (rnd() > 0.55 ? 1 : 0);
+      s += '<rect x="' + wx.toFixed(1) + '" y="' + wy.toFixed(1) + '" width="' + ww.toFixed(1) + '" height="' + wh.toFixed(1) + '" rx="1" fill="' + (isMine ? 'var(--accent)' : (lit ? 'var(--accent-soft)' : 'var(--surface-2)')) + '" stroke="var(--line-2)" stroke-width="0.8"/>';
+    }
+    if(isMine) s += '<rect x="' + (bx+1) + '" y="' + (by + bh - (f+1)*fh + 1) + '" width="' + (bw-2) + '" height="' + (fh-2) + '" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="3 2"/>';
+  }
+  if(p.asset.type === 'house' || p.asset.type === 'garden'){
+    s += '<rect x="' + (bx-16) + '" y="' + (H-20) + '" width="' + (bw+32) + '" height="8" rx="3" fill="var(--accent-soft)"/>';
+  }
+  s += '</svg>';
+  return s;
+}
+
+/* ===== rendering ===== */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function row(k, v, cls){ return '<div class="row"><span class="k">' + k + '</span><span class="v ' + (cls||'') + '">' + v + '</span></div>'; }
+function ringColor(n){ return n >= 80 ? 'var(--good)' : n >= 62 ? 'var(--accent)' : n >= 45 ? 'var(--warn)' : 'var(--muted)'; }
+
+function featureList(p){
+  var f = p.asset.f, out = [];
+  out.push(f.elevator ? 'מעלית' : 'ללא מעלית');
+  out.push(f.parking > 0 ? 'חניה × ' + f.parking : 'ללא חניה');
+  if(f.mamad) out.push('ממ״ד'); else out.push('ללא ממ״ד');
+  if(p.asset.balcony > 0) out.push('מרפסת ' + p.asset.balcony + ' מ״ר');
+  if(f.storage) out.push('מחסן');
+  if(f.accessible) out.push('גישה לנכים');
+  if(f.furnished) out.push('מרוהט');
+  if(f.separateEntrance) out.push('כניסה נפרדת');
+  if(f.bars) out.push('סורגים');
+  out.push('מיזוג: ' + f.ac);
+  return out;
+}
+
+function card(p, e, sc, fl, profile){
+  var sale = p.deal === 'sale';
+  var deltaCls = e.delta === null ? 'par' : (e.delta <= -0.03 ? 'under' : (e.delta >= 0.03 ? 'over' : 'par'));
+  var deltaTxt;
+  if(sale) deltaTxt = (e.delta > 0 ? '+' : '') + Math.round(e.delta*100) + '% מול חציון האזור';
+  else { var d = (p.price - p.market.areaMedianRent)/p.market.areaMedianRent; deltaCls = d <= -0.03 ? 'under' : (d >= 0.03 ? 'over' : 'par'); deltaTxt = (d > 0 ? '+' : '') + Math.round(d*100) + '% מול שכ״ד אזורי'; }
+
+  var h = '<article class="card">';
+
+  /* facade + score */
+  h += '<div class="facade">' + facade(p) + '<div class="facade-tl">';
+  h += '<span class="tag acc">' + (sale ? 'מכירה' : 'שכירות') + '</span>';
+  h += '<span class="tag">' + TYPES[p.asset.type] + '</span></div>';
+  h += '<div class="facade-tr"><div class="score"><span class="ring" style="background:' + ringColor(sc.n) + '">' + sc.n + '</span><span>התאמה</span></div></div>';
+  if(p.listing.priceDrop > 0) h += '<span class="deal">ירד ' + short(p.listing.priceDrop) + '</span>';
+  else if(sale && e.delta !== null && e.delta <= -0.08) h += '<span class="deal">מתחת לחציון האזור</span>';
+  else if(p.listing.daysOnMarket <= 14) h += '<span class="deal">חדש בשוק</span>';
+  h += '</div>';
+
+  /* title */
+  h += '<div class="c-head"><div class="c-title">' + TYPES[p.asset.type] + ' ' + p.asset.rooms + ' חדרים · ' + esc(p.location.neighborhood) + '</div>';
+  h += '<div class="c-addr">' + esc(p.location.street) + ', ' + esc(p.location.city) + ' · <span class="mono">גוש ' + p.location.gush + ' חלקה ' + p.location.helka + (p.location.tat ? '/' + p.location.tat : '') + '</span></div></div>';
+
+  /* price */
+  h += '<div class="c-price"><span class="big num">' + (sale ? shekel(p.price) : shekel(p.price) + '<span style="font-size:14px;font-weight:600"> / חודש</span>') + '</span>';
+  if(sale) h += '<span class="per num">' + shekel(e.ppsm) + ' למ״ר</span>';
+  h += '<span class="delta ' + deltaCls + ' num">' + deltaTxt + '</span></div>';
+
+  /* core specs */
+  h += '<div class="specs">'
+    + '<div class="spec"><b>' + p.asset.sqm + '</b><span>מ״ר</span></div>'
+    + '<div class="spec"><b>' + p.asset.rooms + '</b><span>חדרים</span></div>'
+    + '<div class="spec"><b>' + (p.asset.floor === 0 ? 'קרקע' : p.asset.floor + '/' + p.asset.floors) + '</b><span>קומה</span></div>'
+    + '<div class="spec"><b>' + p.asset.builtYear + '</b><span>שנת בנייה</span></div></div>';
+
+  /* why */
+  if(sc.why.length){
+    h += '<div class="why"><div class="lbl">למה זה כאן</div><div class="tags">';
+    sc.why.forEach(function(w){ h += '<span class="tag acc">' + esc(w) + '</span>'; });
+    h += '</div></div>';
+  }
+
+  /* flags */
+  if(fl.length){
+    h += '<div class="flags">';
+    fl.slice(0,4).forEach(function(f){
+      var mark = f.k === 'crit' ? '●' : f.k === 'warn' ? '▲' : '✓';
+      h += '<div class="flag ' + f.k + '"><i>' + mark + '</i><span>' + esc(f.t) + '</span></div>';
+    });
+    if(fl.length > 4) h += '<div class="sub">ועוד ' + (fl.length-4) + ' הערות במגירת הרישום</div>';
+    h += '</div>';
+  }
+
+  /* drawers */
+  h += '<div class="more">';
+
+  h += '<details><summary>מאפיינים ומצב</summary><div class="body">';
+  h += '<div class="tags" style="margin-bottom:8px">';
+  featureList(p).forEach(function(x){ h += '<span class="tag">' + esc(x) + '</span>'; });
+  h += '</div>';
+  h += row('מצב הנכס', COND[p.asset.condition]);
+  h += row('כיווני אוויר', esc(p.asset.aspects));
+  if(p.asset.lot) h += row('שטח מגרש', p.asset.lot + ' מ״ר');
+  h += row('תאריך כניסה', esc(p.listing.availableFrom));
+  if(!sale && p.rent){
+    h += row('פיקדון', p.rent.depositMonths + ' חודשי שכירות (' + shekel(e.deposit) + ')');
+    h += row('תקופה מינימלית', p.rent.minMonths + ' חודשים');
+    h += row('חיות מחמד', p.rent.pets ? 'מותר' : 'לא מותר');
+  }
+  h += '</div></details>';
+
+  h += '<details><summary>' + (sale ? 'עלות חודשית משוערת' : 'עלות חודשית מלאה') + '</summary><div class="body">';
+  if(sale){
+    h += row('החזר משכנתא', shekel(e.monthlyMortgage));
+    h += row('ארנונה', shekel(p.costs.arnona));
+    h += row('ועד בית', shekel(p.costs.vaad));
+    h += row('סה״כ לחודש', '<b>' + shekel(e.monthlyAllIn) + '</b>');
+    h += '<p class="sub">מבוסס על ' + pct(e.ltv,0) + ' מימון, ריבית ' + pct(RATE,2) + ' ו־' + YEARS + ' שנים. שנו את פרופיל הקונה כדי לראות מגבלת מימון אחרת.</p>';
+  } else {
+    h += row('שכר דירה', shekel(p.price));
+    h += row('ארנונה', shekel(p.costs.arnona));
+    h += row('ועד בית', shekel(p.costs.vaad));
+    h += row('חשמל ומים (משוער)', shekel(p.costs.utilities));
+    h += row('סה״כ לחודש', '<b>' + shekel(e.monthlyAllIn) + '</b>');
+  }
+  h += '</div></details>';
+
+  if(sale){
+    h += '<details><summary>מיסוי ועלות רכישה · ' + PROFILE_LABEL[profile] + '</summary><div class="body">';
+    e.tax.brackets.forEach(function(b){
+      var to = b.to === Infinity ? '∞' : nf.format(b.to);
+      var rl = (b.rate*100).toFixed(1).replace(/\.0$/,'') + '%';
+      h += row('<span class="mono">' + nf.format(b.from) + '–' + to + '</span> · ' + rl, shekel(b.amount));
+    });
+    h += row('<b>מס רכישה משוער</b>', '<b>' + shekel(e.tax.amount) + '</b>');
+    if(e.tax.ceilingLost) h += '<p class="sub" style="color:var(--crit)">שווי הנכס עולה על 20,183,565 ₪, ולכן הקלת תקנה 12א לעולה חדש אינה חלה כלל והחישוב חוזר למדרגות הרגילות על מלוא השווי.</p>';
+    if(e.tax.cliff) h += '<p class="sub" style="color:var(--warn)">מעל 2,500,000 ₪ — 0.5% חלים על מלוא השווי ולא רק על היתרה.</p>';
+    if(profile === 'upgrade') h += '<p class="sub">מסלול דירה יחידה מותנה במכירת הדירה הקיימת בחלון הסטטוטורי והצהרה על כך בדיווח.</p>';
+    if(profile === 'additional') h += '<p class="sub">שיעורי 8%/10% הם הוראת שעה בתוקף עד 31.12.2026 — לאמת לפני הסתמכות ב־2027.</p>';
+    h += '<div style="height:8px"></div>';
+    h += row('עו״ד (משוער)', shekel(e.closing.lawyer));
+    h += row('תיווך' + (p.listing.publisher.kind === 'agency' ? ' ' + p.listing.publisher.feePct + '% + מע״מ' : ''), e.closing.agent ? shekel(e.closing.agent) : '—');
+    h += row('שמאי ואגרות', shekel(e.closing.appraiser + e.closing.misc));
+    h += row('<b>סה״כ עלות כניסה</b>', '<b>' + shekel(e.acquisition) + '</b>');
+    h += row('הון עצמי נדרש (' + pct(1-e.ltv,0) + ' + עלויות)', '<b>' + shekel(e.equity) + '</b>');
+    h += '<p class="sub">כל סכומי המס משוערים ואינם חישוב מחייב. לאימות מול <a href="https://www.gov.il/he/service/real_eatate_taxsimulator" target="_blank" rel="noopener">סימולטור רשות המסים</a>.</p>';
+    h += '</div></details>';
+
+    h += '<details><summary>השקעה ותשואה</summary><div class="body">';
+    h += row('שכ״ד צפוי באזור', shekel(e.rentExpected));
+    h += row('תשואה ברוטו', '<b>' + pct(e.grossYield,2) + '</b>');
+    h += row('תשואה נטו (על עלות כוללת)', '<b>' + pct(e.netYield,2) + '</b>');
+    h += row('תזרים חודשי מול משכנתא', (e.rentExpected - e.monthlyAllIn >= 0 ? '+' : '') + shekel(e.rentExpected - e.monthlyAllIn));
+    h += '<p class="sub">נטו מחושב בניכוי 4% תקופות ריקות, 5% תחזוקה, ביטוח וועד בית, וחלקי עלות הרכישה הכוללת ולא חלקי המחיר. תקרת הפטור ממס על הכנסה משכירות היא פרמטר מערכת <span class="tag warn">לאימות</span> ואינה מגולמת כאן.</p>';
+    h += '</div></details>';
+  }
+
+  h += '<details><summary>רישום, תכנון וסביבה</summary><div class="body">';
+  h += row('סוג רישום', p.registry.kind + ' · ' + p.registry.tenure);
+  if(p.registry.leaseEnds) h += row('סיום חכירה', p.registry.leaseEnds);
+  h += row('הערות אזהרה', p.registry.caveats === 0 ? 'לא נמצאו' : p.registry.caveats);
+  h += row('משכנתאות רשומות', p.registry.mortgages);
+  h += row('אימות מול נסח', p.registry.verified ? 'אומת' : '<span style="color:var(--warn)">לא אומת</span>');
+  if(p.registry.splitPermit === 'unknown') h += row('היתר פיצול', '<span style="color:var(--crit)">לא אותר</span>');
+  h += row('התחדשות עירונית', p.planning.renewal ? p.planning.renewal + ' · ' + p.planning.stage : 'אין תוכנית פעילה');
+  if(p.planning.betterment) h += row('חשיפה להיטל השבחה', p.planning.betterment);
+  h += row('תחבורה ציבורית', p.location.walk.transit + ' דק׳ הליכה');
+  h += row('בית ספר', p.location.walk.school + ' דק׳ הליכה');
+  h += row('פארק', p.location.walk.park + ' דק׳ הליכה');
+  if(fl.length > 4){
+    h += '<div style="height:8px"></div>';
+    fl.slice(4).forEach(function(f){ h += '<div class="flag ' + f.k + '" style="margin-bottom:4px"><i>' + (f.k === 'crit' ? '●' : f.k === 'warn' ? '▲' : '✓') + '</i><span>' + esc(f.t) + '</span></div>'; });
+  }
+  h += '</div></details>';
+
+  if(sale && p.market.comps.length){
+    h += '<details><summary>עסקאות השוואה · מקור: נדל״ן רשות המסים</summary><div class="body">';
+    p.market.comps.forEach(function(c){
+      h += row(c[0] + ' · ' + c[1] + ' מ״ר', shekel(c[2]) + ' <span style="color:var(--muted);font-weight:400">(' + shekel(c[2]/c[1]) + '/מ״ר)</span>');
+    });
+    h += row('<b>חציון האזור למ״ר</b>', '<b>' + shekel(p.market.areaMedianPpsm) + '</b>');
+    h += '<p class="sub">אינדיקציה בלבד ולא שומה: ללא ביקור בנכס וללא התאמות שיטת ההשוואה. עודכן ' + p.market.asOf + '.</p>';
+    h += '</div></details>';
+  }
+  h += '</div>';
+
+  h += '<div class="c-foot">'
+    + '<button class="mini primary">שמירה</button>'
+    + '<button class="mini">השוואה</button>'
+    + '<button class="mini">דוח נכס</button>'
+    + '<span class="src">' + esc(p.listing.source) + ' · ' + p.listing.daysOnMarket + ' ימים · ' + (p.listing.publisher.kind === 'agency' ? 'תיווך' : 'פרטי') + '</span>'
+    + '</div>';
+
+  h += '</article>';
+  return h;
+}
+
+/* ===== state + wiring ===== */
+var Q = {};
+var el = function(id){ return document.getElementById(id); };
+var TOGGLES = [['elevator','מעלית'],['parking','חניה'],['mamad','ממ״ד'],['balcony','מרפסת'],['storage','מחסן'],['accessible','גישה לנכים'],['furnished','מרוהט'],['separateEntrance','כניסה נפרדת']];
+
+(function initControls(){
+  var city = el('f-city');
+  CITIES.forEach(function(c){ var o = document.createElement('option'); o.value = c; o.textContent = c; city.appendChild(o); });
+  var type = el('f-type');
+  Object.keys(TYPES).forEach(function(k){ var o = document.createElement('option'); o.value = k; o.textContent = TYPES[k]; type.appendChild(o); });
+  var tg = el('toggles');
+  TOGGLES.forEach(function(t){
+    var b = document.createElement('button');
+    b.className = 'tg'; b.type = 'button'; b.dataset.k = t[0]; b.setAttribute('aria-pressed','false'); b.textContent = t[1];
+    b.addEventListener('click', function(){
+      var on = b.getAttribute('aria-pressed') === 'true';
+      b.setAttribute('aria-pressed', on ? 'false' : 'true');
+      render();
+    });
+    tg.appendChild(b);
+  });
+})();
+
+function readControls(){
+  var q = {};
+  q.deal = el('f-deal').value;
+  q.city = el('f-city').value || null;
+  q.type = el('f-type').value || null;
+  q.rooms = parseFloat(el('f-rooms').value) || 0;
+  q.pmin = parseFloat(el('f-pmin').value) || 0;
+  q.pmax = parseFloat(el('f-pmax').value) || 0;
+  q.sizeMin = parseFloat(el('f-size').value) || 0;
+  q.yieldMin = (parseFloat(el('f-yield').value) || 0) / 100;
+  q.profile = el('f-buyer').value;
+  q.sort = el('f-sort').value;
+  q.features = [].slice.call(document.querySelectorAll('#toggles .tg[aria-pressed="true"]')).map(function(b){ return b.dataset.k; });
+  return q;
+}
+
+function applyParsed(p){
+  if(p.deal) el('f-deal').value = p.deal;
+  if(p.city) el('f-city').value = p.city;
+  if(p.type) el('f-type').value = p.type;
+  if(p.rooms) el('f-rooms').value = String(p.rooms);
+  if(p.pmax) el('f-pmax').value = String(Math.round(p.pmax));
+  if(p.sizeMin) el('f-size').value = String(p.sizeMin);
+  if(p.yieldMin) el('f-yield').value = String((p.yieldMin*100).toFixed(1));
+  if(p.investor) el('f-buyer').value = 'additional';
+  var want = p.features || [];
+  [].slice.call(document.querySelectorAll('#toggles .tg')).forEach(function(b){
+    b.setAttribute('aria-pressed', want.indexOf(b.dataset.k) > -1 ? 'true' : 'false');
+  });
+  render();
+}
+
+function matches(p, q, e){
+  if(p.deal !== q.deal) return false;
+  if(q.city && p.location.city !== q.city) return false;
+  if(q.type && p.asset.type !== q.type) return false;
+  if(q.rooms && p.asset.rooms < q.rooms) return false;
+  if(q.pmin && p.price < q.pmin) return false;
+  if(q.pmax && p.price > q.pmax) return false;
+  if(q.sizeMin && p.asset.sqm < q.sizeMin) return false;
+  if(q.yieldMin && (!e.grossYield || e.grossYield < q.yieldMin)) return false;
+  for(var i=0;i<q.features.length;i++){
+    var k = q.features[i];
+    if(k === 'parking'){ if(!(p.asset.f.parking > 0)) return false; }
+    else if(k === 'balcony'){ if(!(p.asset.balcony > 0)) return false; }
+    else if(!p.asset.f[k]) return false;
+  }
+  return true;
+}
+
+function render(){
+  var q = readControls();
+  var rows = [];
+  P.forEach(function(p){
+    var e = economics(p, q.profile);
+    if(!matches(p, q, e)) return;
+    var sc = score(p, e, q);
+    rows.push({p:p, e:e, sc:sc, fl:flags(p, e)});
+  });
+  var S = {
+    match:function(a,b){ return b.sc.n - a.sc.n; },
+    'price-asc':function(a,b){ return a.p.price - b.p.price; },
+    'price-desc':function(a,b){ return b.p.price - a.p.price; },
+    ppsm:function(a,b){ return (a.e.ppsm||1e12) - (b.e.ppsm||1e12); },
+    'yield':function(a,b){ return (b.e.grossYield||0) - (a.e.grossYield||0); },
+    fresh:function(a,b){ return a.p.listing.daysOnMarket - b.p.listing.daysOnMarket; },
+    stale:function(a,b){ return b.p.listing.daysOnMarket - a.p.listing.daysOnMarket; }
+  };
+  rows.sort(S[q.sort] || S.match);
+
+  var host = el('cards');
+  if(!rows.length){
+    host.innerHTML = '<div class="empty">אין נכסים שעונים על כל הקריטריונים.<br>נסו להסיר מאפיין נדרש, להעלות את תקרת המחיר, או לבחור עיר אחרת.</div>';
+  } else {
+    host.innerHTML = rows.map(function(r){ return card(r.p, r.e, r.sc, r.fl, q.profile); }).join('');
+  }
+  var flagged = rows.filter(function(r){ return r.fl.some(function(f){ return f.k === 'crit'; }); }).length;
+  el('rescount').innerHTML = '<b>' + rows.length + '</b> נכסים · ' + PROFILE_LABEL[q.profile]
+    + (flagged ? ' · <span class="tag crit">' + flagged + ' עם דגל אדום</span>' : '');
+}
+
+['f-deal','f-city','f-type','f-rooms','f-pmin','f-pmax','f-size','f-yield','f-buyer','f-sort'].forEach(function(id){
+  var n = el(id);
+  n.addEventListener('change', render);
+  n.addEventListener('input', render);
+});
+el('askGo').addEventListener('click', function(){ applyParsed(parseQuery(el('ask').value)); });
+el('ask').addEventListener('keydown', function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); applyParsed(parseQuery(el('ask').value)); } });
+el('askClear').addEventListener('click', function(){
+  el('ask').value = '';
+  ['f-city','f-type','f-pmin','f-pmax','f-size','f-yield'].forEach(function(id){ el(id).value = ''; });
+  el('f-rooms').value = '0';
+  [].slice.call(document.querySelectorAll('#toggles .tg')).forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+  render();
+});
+[].slice.call(document.querySelectorAll('.chip')).forEach(function(c){
+  c.addEventListener('click', function(){
+    el('ask').value = c.dataset.q;
+    applyParsed(parseQuery(c.dataset.q));
+    document.getElementById('proto').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+
+/* nav scrollspy */
+(function(){
+  var links = [].slice.call(document.querySelectorAll('#nav a'));
+  var secs = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if(!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(!en.isIntersecting) return;
+      links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id); });
+    });
+  }, {rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(function(s){ io.observe(s); });
+})();
+
+applyParsed(parseQuery(el('ask').value));
+})();
+</script>
