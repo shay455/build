@@ -26,8 +26,8 @@ const bodySchema = z.object({
   minScore: z.number().int().min(0).max(100).default(60),
 });
 
-export function GET() {
-  return NextResponse.json({ searches: listSavedSearches() });
+export async function GET() {
+  return NextResponse.json({ searches: await listSavedSearches() });
 }
 
 export async function POST(request: Request) {
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const saved = insertSavedSearch({
+  const saved = await insertSavedSearch({
     name: parsed.data.name,
     query: parsed.data.query as never,
     profile: parsed.data.profile as BuyerProfile,
@@ -55,10 +55,10 @@ export async function POST(request: Request) {
   return NextResponse.json({ search: saved }, { status: 201 });
 }
 
-export function DELETE(request: Request) {
+export async function DELETE(request: Request) {
   const id = new URL(request.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'חסר מזהה' }, { status: 400 });
-  return deleteSavedSearch(id)
+  return (await deleteSavedSearch(id))
     ? NextResponse.json({ deleted: id })
     : NextResponse.json({ error: 'לא נמצא חיפוש שמור' }, { status: 404 });
 }

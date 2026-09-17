@@ -17,7 +17,7 @@ const PROFILES = new Set<BuyerProfile>(['single', 'upgrade', 'additional', 'oleh
  */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const property = getProperty(id);
+  const property = await getProperty(id);
   if (!property) {
     return Response.json({ error: 'לא נמצא נכס' }, { status: 404 });
   }

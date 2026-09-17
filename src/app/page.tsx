@@ -5,9 +5,8 @@ import { resolveSource } from '@/lib/sources';
 
 export const dynamic = 'force-dynamic';
 
-export default function HomePage() {
-  const properties = listProperties();
-  const cities = listCities();
+export default async function HomePage() {
+  const [properties, cities] = await Promise.all([listProperties(), listCities()]);
   const source = resolveSource();
   const enriched = properties.filter((p) => p.marketStatus !== 'manual').length;
 

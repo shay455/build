@@ -14,15 +14,16 @@ export { GovMapResolver, readParcel } from './govmap';
  * `PARCEL_SOURCE` is a comma-separated order, default `gazetteer`.
  * Add `govmap` to consult the official geocoder — see the note in govmap.ts first.
  */
-export function resolveParcelResolver(): ParcelResolver {
+export async function resolveParcelResolver(): Promise<ParcelResolver> {
   const wanted = (process.env.PARCEL_SOURCE ?? 'gazetteer').split(',').map((s) => s.trim());
   const links: ParcelResolver[] = [];
 
   for (const name of wanted) {
     if (name === 'gazetteer') {
+      const properties = await listProperties();
       links.push(
         new GazetteerResolver(
-          listProperties().map((p) => ({ city: p.city, street: p.street, gush: p.gush, helka: p.helka })),
+          properties.map((p) => ({ city: p.city, street: p.street, gush: p.gush, helka: p.helka })),
         ),
       );
     } else if (name === 'govmap') {

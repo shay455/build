@@ -18,8 +18,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'יש להזין כתובת' }, { status: 400 });
   }
 
-  const parsed = parseAddress(address, listCities());
-  const resolver = resolveParcelResolver();
+  const parsed = parseAddress(address, await listCities());
+  const resolver = await resolveParcelResolver();
   const resolution = await resolver.resolve(address);
 
   return NextResponse.json({

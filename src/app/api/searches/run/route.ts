@@ -27,19 +27,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'גוף הבקשה אינו JSON תקין' }, { status: 400 });
   }
 
-  const searches = body.id ? [getSavedSearch(body.id)].filter((s) => s !== null) : listSavedSearches();
+  const searches = body.id
+    ? [await getSavedSearch(body.id)].filter((s) => s !== null)
+    : await listSavedSearches();
   if (searches.length === 0) {
     return NextResponse.json({ error: 'לא נמצא חיפוש שמור' }, { status: 404 });
   }
 
-  const properties = listProperties();
+  const properties = await listProperties();
   const at = new Date().toISOString();
   const runs: RunResult[] = [];
 
   for (const saved of searches) {
     const results = search(properties, saved.query, saved.profile);
-    const outcome = diffRun(saved, results, getSeen(saved.id));
-    if (!body.dryRun) saveRun(saved.id, outcome.nextSeen, at);
+    const outcome = diffRun(saved, results, await getSeen(saved.id));
+    if (!body.dryRun) await saveRun(saved.id, outcome.nextSeen, at);
     runs.push({
       search: { ...saved, lastRunAt: body.dryRun ? saved.lastRunAt : at },
       alerts: outcome.alerts,

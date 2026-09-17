@@ -28,11 +28,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'גוף הבקשה אינו JSON תקין' }, { status: 400 });
   }
 
-  const targets = body.id
-    ? [getProperty(body.id)].filter((p) => p !== null)
-    : body.ids
-      ? body.ids.map((id) => getProperty(id)).filter((p) => p !== null)
-      : listProperties();
+  const requested = body.id ? [body.id] : body.ids;
+  const targets = requested
+    ? (await Promise.all(requested.map((id) => getProperty(id)))).filter((p) => p !== null)
+    : await listProperties();
 
   if (targets.length === 0) {
     return NextResponse.json({ error: 'לא נמצא נכס להעשרה' }, { status: 404 });
@@ -52,7 +51,7 @@ export async function POST(request: Request) {
       continue;
     }
 
-    updateMarketData(p.id, {
+    await updateMarketData(p.id, {
       areaMedianPpsm: Math.round(snapshot.medianPpsm),
       comparables: snapshot.comparables,
       marketAsOf: snapshot.asOf ?? p.marketAsOf,

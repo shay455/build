@@ -3,8 +3,8 @@ import { countProperties } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export default function AddPage() {
-  const total = countProperties();
+export default async function AddPage() {
+  const total = await countProperties();
 
   return (
     <div className="flex flex-col gap-5">

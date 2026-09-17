@@ -41,6 +41,6 @@ export async function POST(request: Request) {
     }
   });
 
-  const imported = valid.length > 0 ? insertMany(valid) : 0;
+  const imported = valid.length > 0 ? await insertMany(valid) : 0;
   return NextResponse.json({ imported, rejected: records.length - valid.length, errors });
 }

@@ -12,9 +12,9 @@ const PROFILES = new Set<BuyerProfile>(['single', 'upgrade', 'additional', 'oleh
  * Search endpoint. `q` is free Hebrew text; explicit parameters override whatever
  * the parser inferred from it, so a caller can always be unambiguous.
  */
-export function GET(request: Request) {
+export async function GET(request: Request) {
   const sp = new URL(request.url).searchParams;
-  const cities = listCities();
+  const cities = await listCities();
 
   const parsed: SearchQuery = sp.has('q') ? parseQuery(sp.get('q') ?? '', cities) : {};
   const override = <T>(key: string, cast: (raw: string) => T): T | undefined => {
@@ -37,7 +37,7 @@ export function GET(request: Request) {
   const profile: BuyerProfile = profileParam && PROFILES.has(profileParam) ? profileParam : 'single';
   const sort = (sp.get('sort') as SortKey | null) ?? 'match';
 
-  const results = search(listProperties(), query, profile, sort);
+  const results = search(await listProperties(), query, profile, sort);
 
   return NextResponse.json({
     query,

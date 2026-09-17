@@ -16,8 +16,38 @@ npm run typecheck
 npm run build
 ```
 
-מסד הנתונים הוא SQLite מקומי ב-`data/app.db`, שנוצר ונזרע אוטומטית בהפעלה הראשונה
-מ-`src/lib/seed-data.ts`. אפשר לשנות נתיב עם `DATABASE_PATH`. למסד נקי: מחקו את הקובץ.
+מסד הנתונים הוא libSQL. בלי הגדרות הוא קובץ מקומי ב-`data/app.db`, שנוצר ונזרע אוטומטית
+בהתחברות הראשונה מ-`src/lib/seed-data.ts`. `npm run db:reset` מוחק אותו.
+
+## פריסה
+
+הקוד רץ כמו שהוא גם מקומית וגם serverless, כי שכבת הנתונים היא **libSQL** — אותו דרייבר
+מדבר גם עם קובץ מקומי (`file:`) וגם עם מסד מנוהל (`libsql://`). זה מכוון: פריסה serverless
+היא בלי דיסק שאפשר לכתוב אליו, ודרייבר מקומי נפרד היה אומר שמסלול הקוד שנפרס אינו זה
+שנבדק.
+
+### Vercel + Turso
+
+```bash
+# 1. מסד מנוהל
+turso db create mafteach-nechasim
+turso db show mafteach-nechasim --url          # libsql://...
+turso db tokens create mafteach-nechasim       # הטוקן
+
+# 2. פריסה
+vercel link
+vercel env add DATABASE_URL production         # הדביקו את ה-URL
+vercel env add DATABASE_AUTH_TOKEN production  # הדביקו את הטוקן
+vercel deploy --prod
+```
+
+הסכמה והזריעה מורצות אוטומטית בבקשה הראשונה, אז אין צורך במיגרציה ידנית.
+
+**הגנה מכוונת:** אם האפליקציה רצה על Vercel או Lambda **בלי** `DATABASE_URL`, היא נופלת
+מיד עם הודעה מפורשת. היא לא נופלת חזרה לקובץ מקומי — כי הפלטפורמה תמחק אותו בין הפעלות,
+וזה ייראה כמו נתונים שנעלמים בשקט.
+
+`.env.example` מתעד את כל משתני הסביבה.
 
 ## מבנה
 
@@ -36,7 +66,7 @@ src/lib/pdf.ts         רינדור הדוח ל-PDF
 assets/fonts/          DejaVu Sans, מקובע כדי שהדוח ייראה זהה בכל מכונה
 src/lib/address.ts     נרמול כתובות עברי: תחיליות רחוב, קיצורי ערים, מספר בית, פרטי יחידה
 src/lib/sources/       מקורות: נתוני שוק (נדל״ן / fixtures) ואיתור חלקה (GovMap / גזטיר)
-src/lib/db.ts          שכבת SQLite
+src/lib/db.ts          שכבת libSQL (קובץ מקומי או מסד מנוהל, אותו קוד)
 src/lib/validation.ts  סכמת קלט (zod) והמרה לישות
 src/components/        כרטיס הנכס, מסך החיפוש, טופס ההזנה
 src/app/api/           search · properties · import

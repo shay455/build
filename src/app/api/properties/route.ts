@@ -4,8 +4,8 @@ import { propertyInputSchema, toProperty } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
-export function GET() {
-  return NextResponse.json({ properties: listProperties() });
+export async function GET() {
+  return NextResponse.json({ properties: await listProperties() });
 }
 
 export async function POST(request: Request) {
@@ -24,6 +24,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const property = insertProperty(toProperty(parsed.data));
+  const property = await insertProperty(toProperty(parsed.data));
   return NextResponse.json({ property }, { status: 201 });
 }
