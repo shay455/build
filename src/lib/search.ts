@@ -13,6 +13,16 @@ export interface SearchResult {
   flags: Flag[];
 }
 
+/**
+ * Everything the UI needs about one property for a given user: the money, the
+ * score with its reasons, and the flags. Filtering is a separate concern, so this
+ * also serves the comparison view, where the user has already chosen the property.
+ */
+export function evaluate(property: Property, q: SearchQuery, profile: BuyerProfile): SearchResult {
+  const e = economics(property, profile);
+  return { property, economics: e, score: scoreProperty(property, e, q), flags: flagsFor(property, e) };
+}
+
 /** Hard filters exclude; the score only orders what survives. */
 export function passesFilters(p: Property, q: SearchQuery, e: Economics): boolean {
   if (q.deal && p.deal !== q.deal) return false;
@@ -54,9 +64,9 @@ export function search(
 ): SearchResult[] {
   const results: SearchResult[] = [];
   for (const property of properties) {
-    const e = economics(property, profile);
-    if (!passesFilters(property, q, e)) continue;
-    results.push({ property, economics: e, score: scoreProperty(property, e, q), flags: flagsFor(property, e) });
+    const evaluated = evaluate(property, q, profile);
+    if (!passesFilters(property, q, evaluated.economics)) continue;
+    results.push(evaluated);
   }
   return results.sort(COMPARATORS[sort] ?? COMPARATORS.match);
 }

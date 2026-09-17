@@ -1,10 +1,16 @@
 const nf = new Intl.NumberFormat('he-IL');
 
+/**
+ * The sign goes outside the currency symbol. Letting Intl place it produces
+ * "₪-6,704", which in an RTL line renders with the minus adrift from the number.
+ */
 export function shekel(n: number): string {
-  return `₪${nf.format(Math.round(n))}`;
+  const rounded = Math.round(n);
+  return `${rounded < 0 ? '-' : ''}₪${nf.format(Math.abs(rounded))}`;
 }
 
 export function shortShekel(n: number): string {
+  if (n < 0) return `-${shortShekel(-n)}`;
   if (n >= 1_000_000) return `₪${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 2).replace(/\.?0+$/, '')}M`;
   if (n >= 1000) return `₪${Math.round(n / 1000)}K`;
   return shekel(n);

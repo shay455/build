@@ -90,7 +90,20 @@ function ringClass(n: number): string {
   return 'bg-muted';
 }
 
-export function PropertyCard({ result, profile }: { result: SearchResult; profile: BuyerProfile }) {
+export function PropertyCard({
+  result,
+  profile,
+  selected = false,
+  selectable = true,
+  onToggleSelect,
+}: {
+  result: SearchResult;
+  profile: BuyerProfile;
+  selected?: boolean;
+  /** False once the comparison is full, so the control explains itself instead of failing silently. */
+  selectable?: boolean;
+  onToggleSelect?: (id: string) => void;
+}) {
   const { property: p, economics: e, score, flags } = result;
   const sale = p.deal === 'sale';
   const delta = e.deltaVsArea;
@@ -109,7 +122,11 @@ export function PropertyCard({ result, profile }: { result: SearchResult; profil
   const restFlags = flags.slice(4);
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-xl border border-line bg-surface hover:border-accent">
+    <article
+      className={`flex flex-col overflow-hidden rounded-xl border bg-surface hover:border-accent ${
+        selected ? 'border-accent ring-1 ring-accent' : 'border-line'
+      }`}
+    >
       <div className="relative aspect-video max-w-full overflow-hidden bg-surface-3">
         <Facade property={p} />
         <div className="absolute top-2 start-2 flex flex-wrap gap-1.5">
@@ -406,6 +423,20 @@ export function PropertyCard({ result, profile }: { result: SearchResult; profil
       </div>
 
       <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-line-2 px-3.5 py-2.5">
+        {onToggleSelect && (
+          <button
+            type="button"
+            onClick={() => onToggleSelect(p.id)}
+            disabled={!selected && !selectable}
+            aria-pressed={selected}
+            title={!selected && !selectable ? `ההשוואה מלאה` : undefined}
+            className={`rounded-md border px-2.5 py-1.5 text-xs font-bold disabled:opacity-50 ${
+              selected ? 'border-transparent bg-accent text-white' : 'border-line bg-surface text-ink-2 hover:border-accent hover:text-accent-ink'
+            }`}
+          >
+            {selected ? '✓ בהשוואה' : 'הוספה להשוואה'}
+          </button>
+        )}
         <span className="rounded-md border border-transparent bg-accent-soft px-2.5 py-1.5 text-xs font-bold text-accent-ink">
           ציון {score.value}/100
         </span>

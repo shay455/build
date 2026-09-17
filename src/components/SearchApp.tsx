@@ -1,9 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { ComparisonPanel } from './ComparisonPanel';
 import { PropertyCard } from './PropertyCard';
+import { MAX_COMPARE } from '@/lib/compare';
 import { ASSET_TYPE_LABEL, FEATURE_LABEL, parseQuery, type FeatureKey, type SearchQuery } from '@/lib/query';
-import { search, type SortKey } from '@/lib/search';
+import { evaluate, search, type SortKey } from '@/lib/search';
 import type { AssetType, BuyerProfile, Deal, Property } from '@/types/property';
 
 const PROFILE_OPTIONS: Array<[BuyerProfile, string]> = [
@@ -94,6 +96,8 @@ export function SearchApp({ properties, cities }: { properties: Property[]; citi
   const [filters, setFilters] = useState<Filters>(() => fromParsed(parseQuery(initial, cities), EMPTY));
   const [profile, setProfile] = useState<BuyerProfile>('single');
   const [sort, setSort] = useState<SortKey>('match');
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   const results = useMemo(
     () => search(properties, toQuery(filters), profile, sort),
@@ -101,6 +105,28 @@ export function SearchApp({ properties, cities }: { properties: Property[]; citi
   );
 
   const criticalCount = results.filter((r) => r.flags.some((f) => f.level === 'crit')).length;
+
+  // Selection is held by id and resolved against the full inventory, so a property
+  // stays in the comparison after a filter change stops it matching the search.
+  const compared = useMemo(() => {
+    const byId = new Map(properties.map((p) => [p.id, p]));
+    const q = toQuery(filters);
+    return compareIds
+      .map((id) => byId.get(id))
+      .filter((p): p is Property => p !== undefined)
+      .map((p) => evaluate(p, q, profile));
+  }, [properties, compareIds, filters, profile]);
+
+  const toggleCompare = (id: string) =>
+    setCompareIds((ids) => {
+      if (ids.includes(id)) {
+        const next = ids.filter((x) => x !== id);
+        if (next.length === 0) setCompareOpen(false);
+        return next;
+      }
+      if (ids.length >= MAX_COMPARE) return ids;
+      return [...ids, id];
+    });
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) =>
     setFilters((f) => ({ ...f, [key]: value }));
 
@@ -300,6 +326,36 @@ export function SearchApp({ properties, cities }: { properties: Property[]; citi
           </div>
         </div>
 
+        {compareIds.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-accent-soft bg-accent-soft px-3 py-2">
+            <span className="text-[13px] font-semibold text-accent-ink">
+              {compareIds.length} נכסים נבחרו להשוואה
+              {compareIds.length >= MAX_COMPARE && ' (המקסימום)'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setCompareOpen((v) => !v)}
+              className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white"
+            >
+              {compareOpen ? 'הסתרת ההשוואה' : 'הצגת ההשוואה'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCompareIds([]);
+                setCompareOpen(false);
+              }}
+              className="text-xs font-semibold text-accent-ink underline"
+            >
+              ניקוי הבחירה
+            </button>
+          </div>
+        )}
+
+        {compareOpen && compared.length > 0 && (
+          <ComparisonPanel results={compared} onRemove={toggleCompare} onClose={() => setCompareOpen(false)} />
+        )}
+
         {results.length === 0 ? (
           <p className="py-10 text-center text-[15px] text-muted">
             אין נכסים שעונים על כל הקריטריונים.
@@ -309,7 +365,14 @@ export function SearchApp({ properties, cities }: { properties: Property[]; citi
         ) : (
           <div className="mt-4 grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
             {results.map((r) => (
-              <PropertyCard key={r.property.id} result={r} profile={profile} />
+              <PropertyCard
+                key={r.property.id}
+                result={r}
+                profile={profile}
+                selected={compareIds.includes(r.property.id)}
+                selectable={compareIds.length < MAX_COMPARE}
+                onToggleSelect={toggleCompare}
+              />
             ))}
           </div>
         )}
