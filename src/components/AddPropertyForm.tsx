@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { AddressLookup, type ResolvedAddress } from './AddressLookup';
 import { ASSET_TYPE_LABEL } from '@/lib/query';
 import { CSV_COLUMNS } from '@/lib/csv';
 import type { AssetType } from '@/types/property';
@@ -48,6 +49,8 @@ const CHECKBOXES: Array<[string, string]> = [
 export function AddPropertyForm() {
   const [assetType, setAssetType] = useState<AssetType>('apartment');
   const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
+  // These four are controlled so the address lookup can fill them.
+  const [location, setLocation] = useState<ResolvedAddress>({ city: '', street: '', gush: '', helka: '' });
   const [issues, setIssues] = useState<Issue[]>([]);
   const [status, setStatus] = useState<{ kind: 'idle' | 'ok' | 'error'; text: string }>({ kind: 'idle', text: '' });
   const [busy, setBusy] = useState(false);
@@ -75,6 +78,7 @@ export function AddPropertyForm() {
       if (res.ok) {
         setStatus({ kind: 'ok', text: `הנכס נשמר (${json.property.id}). הוא כבר מופיע בחיפוש.` });
         ev.currentTarget.reset();
+        setLocation({ city: '', street: '', gush: '', helka: '' });
       } else {
         setIssues(json.issues ?? []);
         setStatus({ kind: 'error', text: json.error ?? 'השמירה נכשלה' });
@@ -116,23 +120,59 @@ export function AddPropertyForm() {
         </Field>
       </Section>
 
-      <Section title="מיקום" hint="גוש וחלקה הם המפתח לכל מקור רשמי — בלעדיהם אי אפשר להצליב לנדל״ן, לטאבו או ל-GovMap.">
+      <fieldset className="rounded-xl border border-line bg-surface p-4">
+        <legend className="px-1 font-display text-base font-bold">מיקום</legend>
+        <p className="mb-3 text-xs text-muted">
+          גוש וחלקה הם המפתח לכל מקור רשמי — בלעדיהם אי אפשר להצליב לנדל״ן, לטאבו או ל-GovMap. אפשר לאתר
+          אותם מכתובת, או להזין ידנית.
+        </p>
+        <AddressLookup onResolved={(r) => setLocation((prev) => ({ ...prev, ...r }))} />
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
         <Field name="city" label="עיר">
-          <input id="city" name="city" required className={field} />
+          <input
+            id="city"
+            name="city"
+            required
+            className={field}
+            value={location.city}
+            onChange={(e) => setLocation({ ...location, city: e.target.value })}
+          />
           {issueFor('city') && <p className="mt-1 text-xs text-crit">{issueFor('city')}</p>}
         </Field>
         <Field name="neighborhood" label="שכונה">
           <input id="neighborhood" name="neighborhood" className={field} />
         </Field>
         <Field name="street" label="רחוב ומספר">
-          <input id="street" name="street" className={field} />
+          <input
+            id="street"
+            name="street"
+            className={field}
+            value={location.street}
+            onChange={(e) => setLocation({ ...location, street: e.target.value })}
+          />
         </Field>
         <Field name="gush" label="גוש">
-          <input id="gush" name="gush" type="number" required className={field} />
+          <input
+            id="gush"
+            name="gush"
+            type="number"
+            required
+            className={field}
+            value={location.gush}
+            onChange={(e) => setLocation({ ...location, gush: e.target.value })}
+          />
           {issueFor('gush') && <p className="mt-1 text-xs text-crit">{issueFor('gush')}</p>}
         </Field>
         <Field name="helka" label="חלקה">
-          <input id="helka" name="helka" type="number" required className={field} />
+          <input
+            id="helka"
+            name="helka"
+            type="number"
+            required
+            className={field}
+            value={location.helka}
+            onChange={(e) => setLocation({ ...location, helka: e.target.value })}
+          />
           {issueFor('helka') && <p className="mt-1 text-xs text-crit">{issueFor('helka')}</p>}
         </Field>
         <Field name="tatHelka" label="תת־חלקה">
@@ -147,7 +187,8 @@ export function AddPropertyForm() {
         <Field name="walkParkMin" label="הליכה לפארק (דק׳)">
           <input id="walkParkMin" name="walkParkMin" type="number" className={field} defaultValue="0" />
         </Field>
-      </Section>
+        </div>
+      </fieldset>
 
       <Section title="הנכס">
         <Field name="assetType" label="סוג נכס">
