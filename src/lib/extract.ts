@@ -1,4 +1,5 @@
 import { normaliseText, parseAddress } from './address';
+import { focusListingRegion } from './focus';
 import type { AssetType, Condition, Deal } from '@/types/property';
 
 /**
@@ -17,6 +18,8 @@ export interface Extracted<T> {
 }
 
 export interface ExtractedListing {
+  /** Set when a whole-page paste was narrowed to the listing region. */
+  focus?: { narrowed: boolean; dropped: number };
   deal?: Extracted<Deal>;
   price?: Extracted<number>;
   assetType?: Extracted<AssetType>;
@@ -120,7 +123,10 @@ function isNegated(text: string, index: number): boolean {
  */
 export function extractListing(text: string, knownCities: readonly string[] = []): ExtractedListing {
   const out: ExtractedListing = { features: {}, missing: [] };
-  const t = normaliseText(text);
+  // A pasted page is mostly not the listing. Narrow before reading anything.
+  const focus = focusListingRegion(text);
+  out.focus = { narrowed: focus.narrowed, dropped: focus.dropped };
+  const t = focus.text;
   if (!t) {
     out.missing = [...REQUIRED_FIELDS];
     return out;
@@ -153,11 +159,18 @@ export function extractListing(text: string, knownCities: readonly string[] = []
   if (balcony) {
     out.balconySqm = { value: num(balcony[1]), confidence: 'explicit', evidence: balcony[0] };
   }
-  const sqmMatches = [...t.matchAll(/(\d+)\s*מ[״"׳']?ר/g)].filter((m) => m[0] !== balcony?.[0]);
+  // Exclude by position, not by text: the balcony match is "מרפסת שמש 14 מ״ר" while
+  // the area match inside it is just "14 מ״ר", so comparing the strings never excludes it.
+  const balconySpan =
+    balcony?.index === undefined ? null : { from: balcony.index, to: balcony.index + balcony[0].length };
+  const sqmMatches = [...t.matchAll(/(\d+)\s*מ[״"׳']?ר/g)].filter(
+    (m) => balconySpan === null || m.index === undefined || m.index < balconySpan.from || m.index >= balconySpan.to,
+  );
   if (sqmMatches.length > 0) {
-    // The built area is the largest figure quoted in square metres.
-    const best = sqmMatches.reduce((a, b) => (num(b[1]) > num(a[1]) ? b : a));
-    out.sqm = { value: num(best[1]), confidence: 'explicit', evidence: best[0] };
+    // The FIRST area quoted, not the largest. A listing states its own size early;
+    // taking the maximum picks up a bigger property from a "similar listings" rail
+    // that survived narrowing.
+    out.sqm = { value: num(sqmMatches[0][1]), confidence: 'explicit', evidence: sqmMatches[0][0] };
   }
 
   // --- floor

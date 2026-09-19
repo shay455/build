@@ -109,4 +109,5 @@ export const SOURCE_GUIDE = [
   { name: 'ווטסאפ, טלגרם', works: 'טקסט בלבד', why: 'לא נגיש לשרת' },
   { name: 'יוטיוב', works: 'טקסט, או קישור עם מפתח API', why: 'דרך ה-API הרשמי' },
   { name: 'אתרי אינטרנט כלליים', works: 'קישור או טקסט', why: 'בכפוף ל-robots.txt' },
+  { name: 'כל מקור שרואים על המסך', works: 'צילום מסך', why: 'נקרא ב-OCR עברי על השרת' },
 ] as const;

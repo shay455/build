@@ -6,6 +6,8 @@ import type { ExtractedListing } from '@/lib/extract';
 
 interface ExtractResponse {
   fetched: boolean;
+  source?: 'ocr';
+  ocr?: { confidence: number; usable: boolean; text?: string };
   extracted?: ExtractedListing;
   action?: 'paste-text';
   message?: string;
@@ -65,8 +67,38 @@ export function PasteListing({ onExtracted }: { onExtracted: (e: ExtractedListin
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ExtractResponse | null>(null);
   const [showSources, setShowSources] = useState(false);
+  const [imageName, setImageName] = useState('');
 
   const looksLikeUrl = /^https?:\/\/\S+$/i.test(text.trim());
+
+  /** Read a screenshot on the server and extract from what it says. */
+  async function runImage(file: File) {
+    setBusy(true);
+    setResult(null);
+    setImageName(file.name || 'צילום מסך');
+    try {
+      const form = new FormData();
+      form.append('image', file);
+      const res = await fetch('/api/extract', { method: 'POST', body: form });
+      const json = (await res.json()) as ExtractResponse;
+      setResult(json);
+      if (json.ocr?.text) setText(json.ocr.text);
+      if (json.extracted) onExtracted(json.extracted);
+    } catch {
+      setResult({ fetched: false, error: 'קריאת התמונה נכשלה.' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** A screenshot on the clipboard arrives through the paste event, not the textarea. */
+  function onPaste(ev: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const image = Array.from(ev.clipboardData.files).find((f) => f.type.startsWith('image/'));
+    if (image) {
+      ev.preventDefault();
+      void runImage(image);
+    }
+  }
 
   async function run() {
     if (!text.trim()) return;
@@ -101,8 +133,9 @@ export function PasteListing({ onExtracted }: { onExtracted: (e: ExtractedListin
     <section className="rounded-xl border border-accent-soft bg-accent-soft/40 p-4">
       <h2 className="font-display text-base font-bold">הדבקת מודעה</h2>
       <p className="mt-1 text-xs leading-relaxed text-ink-2">
-        הדביקו טקסט של מודעה מכל מקור — יד2, פוסט בפייסבוק, הודעת ווטסאפ, תיאור סרטון — והשדות ימולאו
-        אוטומטית. כל שדה מוצג עם המילים שממנו נגזר, כדי שתוכלו לאשר או לתקן.{' '}
+        הדביקו טקסט של מודעה, קישור, או <b>צילום מסך</b> — מיד2, פוסט בפייסבוק, הודעת ווטסאפ, תיאור
+        סרטון. אפשר גם לסמן דף שלם ב-Cmd+A ולהדביק: המערכת מאתרת בתוכו את אזור המודעה ומתעלמת מהשאר.
+        כל שדה מוצג עם המילים שממנו נגזר, כדי שתוכלו לאשר או לתקן.{' '}
         <button
           type="button"
           onClick={() => setShowSources((v) => !v)}
@@ -144,7 +177,8 @@ export function PasteListing({ onExtracted }: { onExtracted: (e: ExtractedListin
         className="mt-3 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={'דירה למכירה בפלורנטין, תל אביב\nרחוב ויטל 14, 3 חדרים, 72 מ״ר, קומה 2 מתוך 4\nמשופצת, ללא מעלית. מחיר 3,150,000 ש״ח'}
+        onPaste={onPaste}
+        placeholder={'הדביקו כאן טקסט מודעה, קישור, או צילום מסך (Cmd+V על התמונה)\n\nדירה למכירה בפלורנטין, תל אביב\nרחוב ויטל 14, 3 חדרים, 72 מ״ר, קומה 2 מתוך 4\nמשופצת, ללא מעלית. מחיר 3,150,000 ש״ח'}
       />
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -168,8 +202,40 @@ export function PasteListing({ onExtracted }: { onExtracted: (e: ExtractedListin
             ניקוי
           </button>
         )}
+        <label className="cursor-pointer rounded-lg border border-line bg-surface px-3 py-2 text-xs font-bold text-ink-2 hover:border-accent hover:text-accent-ink">
+          העלאת צילום מסך
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void runImage(f);
+              e.target.value = '';
+            }}
+          />
+        </label>
         {looksLikeUrl && <span className="text-xs text-muted">זוהה קישור — ייתכן שיידרש טקסט במקום</span>}
       </div>
+
+      {busy && result === null && (
+        <p className="mt-2 text-xs text-muted" role="status">
+          {imageName ? `קורא את ${imageName}… קריאת תמונה לוקחת כמה שניות.` : 'מחלץ…'}
+        </p>
+      )}
+
+      {result?.ocr && (
+        <p
+          className={`mt-2 rounded-lg px-3 py-2 text-xs ${
+            result.ocr.usable ? 'bg-good-soft text-good' : 'bg-warn-soft text-warn'
+          }`}
+          role="status"
+        >
+          {result.ocr.usable
+            ? `הטקסט נקרא מהתמונה בביטחון ${result.ocr.confidence.toFixed(0)}% והודבק למטה — עברו עליו לפני האישור.`
+            : result.message}
+        </p>
+      )}
 
       {result?.error && <p className="mt-2 text-xs font-semibold text-crit">{result.error}</p>}
 
@@ -184,6 +250,12 @@ export function PasteListing({ onExtracted }: { onExtracted: (e: ExtractedListin
           <p className="text-xs font-bold text-ink-2">
             זוהו {found.length} שדות. ירוק = נאמר במפורש, כתום = הוסק מההקשר.
           </p>
+          {result.extracted.focus?.narrowed && (
+            <p className="mt-1 text-[11px] text-muted">
+              הודבק דף שלם — אותרה בתוכו המודעה, והושמטו {result.extracted.focus.dropped.toLocaleString('he-IL')}{' '}
+              תווים של תפריטים, פרסומות ומודעות אחרות.
+            </p>
+          )}
           <div className="mt-2 flex flex-wrap gap-1.5">
             {found.map(([key, field]) => {
               const f = field as { value: unknown; confidence: keyof typeof CONFIDENCE_TONE; evidence: string };

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { listCities } from '@/lib/db';
 import { extractListing } from '@/lib/extract';
+import { readImage } from '@/lib/ocr';
 import { classifyUrl, SOURCE_GUIDE } from '@/lib/sources/url-policy';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +13,52 @@ export const dynamic = 'force-dynamic';
  * where automated access is not available, answered with what to do instead rather
  * than with a failed fetch.
  */
+/** A screenshot is read on the server; 12MB is well past any real screen capture. */
+const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+
 export async function POST(request: Request) {
+  // A screenshot arrives as multipart, everything else as JSON.
+  if (request.headers.get('content-type')?.includes('multipart/form-data')) {
+    const form = await request.formData();
+    const file = form.get('image');
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'לא צורפה תמונה' }, { status: 400 });
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      return NextResponse.json({ error: 'התמונה גדולה מדי (מעל 12MB)' }, { status: 413 });
+    }
+
+    try {
+      const ocr = await readImage(Buffer.from(await file.arrayBuffer()));
+      if (!ocr.usable) {
+        return NextResponse.json({
+          fetched: false,
+          source: 'ocr',
+          ocr: { confidence: ocr.confidence, usable: false },
+          action: 'paste-text',
+          message: ocr.note,
+        });
+      }
+      const extracted = extractListing(ocr.text, await listCities());
+      return NextResponse.json({
+        fetched: false,
+        source: 'ocr',
+        ocr: { confidence: ocr.confidence, usable: true, text: ocr.text },
+        extracted,
+      });
+    } catch (err) {
+      return NextResponse.json(
+        {
+          error:
+            err instanceof Error && err.message.includes('OCR data')
+              ? err.message
+              : 'קריאת התמונה נכשלה. הדביקו את הטקסט במקום.',
+        },
+        { status: 500 },
+      );
+    }
+  }
+
   let body: { text?: string; url?: string };
   try {
     body = (await request.json()) as { text?: string; url?: string };

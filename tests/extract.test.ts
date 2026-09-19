@@ -199,7 +199,7 @@ describe('a real listing, end to end', () => {
   it('carries evidence for every field it found', () => {
     const r = x(listing);
     for (const [key, field] of Object.entries(r)) {
-      if (key === 'features' || key === 'missing' || field === undefined) continue;
+      if (key === 'features' || key === 'missing' || key === 'focus' || field === undefined) continue;
       expect((field as { evidence: string }).evidence, key).toBeTruthy();
     }
   });
@@ -278,5 +278,67 @@ describe('street extraction is bounded', () => {
 
   it('accepts a bare short address with no street-type word', () => {
     expect(x('ויטל 14, תל אביב').street?.value).toBe('ויטל 14');
+  });
+});
+
+describe('a whole-page paste', () => {
+  // Padded to the length of a real page selection; a Cmd+A on a listing site
+  // yields thousands of characters of navigation and footer.
+  const page = `דף הבית | נדלן | רכב | יד שנייה | דרושים | עסקים | חיות מחמד
+התחברות הרשמה שמור חיפוש קבלת התראות במייל הוספת מודעה חינם
+מיון לפי: רלוונטיות | מחיר מהנמוך | מחיר מהגבוה | תאריך פרסום | שטח
+סינון: מספר חדרים, קומה, מחיר, שטח, מאפיינים, כניסה
+פרסומת: משכנתא בריבית אטרקטיבית עד 4,500,000 ש"ח. לחצו כאן לפרטים
+בנק ממן - מסלול משתלם למשפרי דיור ולרוכשי דירה ראשונה
+
+דירה למכירה בפלורנטין, תל אביב
+רחוב ויטל 14
+3 חדרים, 72 מ"ר, קומה 2 מתוך 4
+מרפסת שמש 6 מ"ר, משופצת
+ללא מעלית, בלי חניה
+הבניין משנת 1958
+גוש 7025 חלקה 88
+מחיר: 3,150,000 ש"ח
+ארנונה 640, ועד בית 190
+
+מודעות נוספות שיעניינו אותך:
+דירה 5 חדרים ברמת אביב, 140 מ"ר, 8,900,000 ש"ח
+פנטהאוז בנווה צדק, 200 מ"ר, 12,500,000 ש"ח
+
+תנאי שימוש | מדיניות פרטיות | הצהרת נגישות | צור קשר | פרסמו אצלנו
+כל הזכויות שמורות 2026. אין להעתיק תכנים מהאתר ללא אישור בכתב
+עקבו אחרינו בפייסבוק, באינסטגרם ובטוויטר | טלפון: 03-1234567`;
+
+  it('narrows to the listing and says how much it dropped', () => {
+    const r = x(page);
+    expect(r.focus?.narrowed).toBe(true);
+    expect(r.focus!.dropped).toBeGreaterThan(200);
+  });
+
+  it('takes this property price, not the most expensive one on the page', () => {
+    // The penthouse at 12,500,000 is the largest number present.
+    expect(x(page).price?.value).toBe(3_150_000);
+  });
+
+  it('takes this property area, not a neighbouring listing that is bigger', () => {
+    expect(x(page).sqm?.value).toBe(72);
+  });
+
+  it('gets every required field from a page paste', () => {
+    const r = x(page);
+    expect(r.missing).toEqual([]);
+    expect(r.rooms?.value).toBe(3);
+    expect(r.gush?.value).toBe(7025);
+    expect(r.street?.value).toBe('ויטל 14');
+    expect(r.features.elevator?.value).toBe(false);
+  });
+
+  it('does not narrow text that is already just a listing', () => {
+    expect(x('דירה 3 חדרים בחיפה, 72 מ"ר, 1,500,000 ש"ח').focus?.narrowed).toBe(false);
+  });
+
+  it('hands back the whole text when nothing in it looks like a listing', () => {
+    const prose = 'שלום וברוכים הבאים לאתר. '.repeat(40);
+    expect(x(prose).focus?.narrowed).toBe(false);
   });
 });
