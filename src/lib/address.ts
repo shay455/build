@@ -54,6 +54,18 @@ export function normaliseQuotes(s: string): string {
   return s.replace(/[״”“"]/g, '"').replace(/[׳’‘']/g, "'");
 }
 
+/**
+ * Light normalisation that preserves punctuation: strip niqqud, unify quotes,
+ * collapse whitespace. Use this wherever the text contains numbers — `canonical`
+ * strips the separators inside them and turns 3,150,000 into three numbers.
+ */
+export function normaliseText(s: string): string {
+  return normaliseQuotes(s)
+    .replace(/[\u0591-\u05C7]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 /** Lowercase-equivalent for Hebrew: strip niqqud, unify quotes, collapse whitespace and punctuation. */
 export function canonical(s: string): string {
   return normaliseQuotes(s)
@@ -74,14 +86,41 @@ export interface ParsedAddress {
   dropped: string[];
 }
 
+/**
+ * Hebrew attaches its prepositions directly to the word: "ברחוב", "בתל אביב",
+ * "לרמת גן". Matching has to see through a single leading particle, or half the
+ * addresses people actually type fail to parse.
+ */
+const PARTICLES = 'בהלמוכש';
+
 function stripStreetPrefix(s: string): string {
   const c = canonical(s);
   for (const prefix of STREET_PREFIXES) {
     const p = canonical(prefix);
     if (c === p) continue;
-    if (c.startsWith(`${p} `)) return c.slice(p.length + 1).trim();
+    for (const candidate of [p, ...[...PARTICLES].map((particle) => particle + p)]) {
+      if (c.startsWith(`${candidate} `)) return c.slice(candidate.length + 1).trim();
+    }
   }
   return c;
+}
+
+/**
+ * Is the match a whole word, allowing one attached Hebrew particle before it?
+ * "בתל אביב" contains the city; "חיפהאווי" does not.
+ */
+function isWholeWord(text: string, at: number, length: number): boolean {
+  const after = text[at + length] ?? ' ';
+  if (/[\u0590-\u05FF]/.test(after)) return false;
+
+  if (at === 0) return true;
+  const before = text[at - 1];
+  if (!/[\u0590-\u05FF]/.test(before)) return true;
+
+  // A single particle is allowed, but only if it stands alone before the match.
+  if (!PARTICLES.includes(before)) return false;
+  const beforeParticle = at >= 2 ? text[at - 2] : ' ';
+  return !/[\u0590-\u05FF]/.test(beforeParticle);
 }
 
 /**
@@ -106,13 +145,11 @@ export function parseAddress(raw: string, knownCities: readonly string[] = []): 
   for (const [needle, name] of candidates) {
     if (!needle) continue;
     const at = text.indexOf(needle);
-    if (at === -1) continue;
-    // Must not be a fragment of a longer word.
-    const before = at === 0 ? ' ' : text[at - 1];
-    const after = text[at + needle.length] ?? ' ';
-    if (/[֐-׿]/.test(before) || /[֐-׿]/.test(after)) continue;
+    if (at === -1 || !isWholeWord(text, at, needle.length)) continue;
     city = name;
-    text = `${text.slice(0, at)} ${text.slice(at + needle.length)}`.replace(/\s+/g, ' ').trim();
+    // Remove any attached particle along with the city, so it does not land in the street.
+    const from = at > 0 && PARTICLES.includes(text[at - 1]) ? at - 1 : at;
+    text = `${text.slice(0, from)} ${text.slice(at + needle.length)}`.replace(/\s+/g, ' ').trim();
     break;
   }
 

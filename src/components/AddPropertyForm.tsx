@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { AddressLookup, type ResolvedAddress } from './AddressLookup';
+import { PasteListing } from './PasteListing';
+import type { ExtractedListing } from '@/lib/extract';
 import { ASSET_TYPE_LABEL } from '@/lib/query';
 import { CSV_COLUMNS } from '@/lib/csv';
 import type { AssetType } from '@/types/property';
@@ -51,11 +53,60 @@ export function AddPropertyForm() {
   const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
   // These four are controlled so the address lookup can fill them.
   const [location, setLocation] = useState<ResolvedAddress>({ city: '', street: '', gush: '', helka: '' });
+  /**
+   * Values pulled out of a pasted listing. The uncontrolled inputs read them as
+   * defaults, and bumping `formKey` remounts the fieldsets so new defaults take.
+   */
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const [checks, setChecks] = useState<Record<string, boolean>>({});
+  const [formKey, setFormKey] = useState(0);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [status, setStatus] = useState<{ kind: 'idle' | 'ok' | 'error'; text: string }>({ kind: 'idle', text: '' });
   const [busy, setBusy] = useState(false);
 
   const issueFor = (name: string) => issues.find((i) => i.path[0] === name)?.message;
+  const d = (name: string, fallback = '') => draft[name] ?? fallback;
+
+  /** Map an extraction onto the form. Only fields the text actually supplied are touched. */
+  function applyExtracted(e: ExtractedListing) {
+    const next: Record<string, string> = {};
+    const put = (key: string, field?: { value: unknown }) => {
+      if (field !== undefined) next[key] = String(field.value);
+    };
+
+    put('price', e.price);
+    put('rooms', e.rooms);
+    put('sqm', e.sqm);
+    put('balconySqm', e.balconySqm);
+    put('floor', e.floor);
+    put('floorsInBuilding', e.floorsInBuilding);
+    put('builtYear', e.builtYear);
+    put('condition', e.condition);
+    put('arnona', e.arnona);
+    put('vaad', e.vaad);
+    put('availableFrom', e.availableFrom);
+    if (e.features.parking) next.parking = String(e.features.parking.value);
+
+    const nextChecks: Record<string, boolean> = {};
+    for (const [name, field] of Object.entries(e.features)) {
+      if (name === 'parking' || field === undefined) continue;
+      nextChecks[name] = Boolean(field.value);
+    }
+
+    setDraft(next);
+    setChecks(nextChecks);
+    if (e.deal) setDeal(e.deal.value);
+    if (e.assetType) setAssetType(e.assetType.value);
+    setLocation((prev) => ({
+      ...prev,
+      city: e.city?.value ?? prev.city,
+      street: e.street?.value ?? prev.street,
+      gush: e.gush ? String(e.gush.value) : prev.gush,
+      helka: e.helka ? String(e.helka.value) : prev.helka,
+    }));
+    setFormKey((k) => k + 1);
+    setStatus({ kind: 'idle', text: '' });
+  }
 
   async function submit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
@@ -79,6 +130,9 @@ export function AddPropertyForm() {
         setStatus({ kind: 'ok', text: `הנכס נשמר (${json.property.id}). הוא כבר מופיע בחיפוש.` });
         ev.currentTarget.reset();
         setLocation({ city: '', street: '', gush: '', helka: '' });
+        setDraft({});
+        setChecks({});
+        setFormKey((k) => k + 1);
       } else {
         setIssues(json.issues ?? []);
         setStatus({ kind: 'error', text: json.error ?? 'השמירה נכשלה' });
@@ -92,6 +146,9 @@ export function AddPropertyForm() {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
+      <PasteListing onExtracted={applyExtracted} />
+
+      <div key={formKey} className="flex flex-col gap-4">
       <Section title="העסקה">
         <Field name="deal" label="סוג עסקה">
           <select id="deal" name="deal" className={field} value={deal} onChange={(e) => setDeal(e.target.value as 'sale' | 'rent')}>
@@ -100,7 +157,7 @@ export function AddPropertyForm() {
           </select>
         </Field>
         <Field name="price" label={deal === 'sale' ? 'מחיר (₪)' : 'שכר דירה לחודש (₪)'}>
-          <input id="price" name="price" type="number" required className={field} />
+          <input id="price" name="price" type="number" required className={field} defaultValue={d('price')} />
           {issueFor('price') && <p className="mt-1 text-xs text-crit">{issueFor('price')}</p>}
         </Field>
         <Field name="source" label="מקור">
@@ -116,7 +173,7 @@ export function AddPropertyForm() {
           <input id="agentFeePct" name="agentFeePct" type="number" step="0.1" className={field} defaultValue="0" />
         </Field>
         <Field name="availableFrom" label="תאריך כניסה">
-          <input id="availableFrom" name="availableFrom" className={field} defaultValue="מיידי" />
+          <input id="availableFrom" name="availableFrom" className={field} defaultValue={d('availableFrom', 'מיידי')} />
         </Field>
       </Section>
 
@@ -207,29 +264,29 @@ export function AddPropertyForm() {
           </select>
         </Field>
         <Field name="rooms" label="חדרים">
-          <input id="rooms" name="rooms" type="number" step="0.5" required className={field} />
+          <input id="rooms" name="rooms" type="number" step="0.5" required className={field} defaultValue={d('rooms')} />
         </Field>
         <Field name="sqm" label="שטח בנוי (מ״ר)">
-          <input id="sqm" name="sqm" type="number" required className={field} />
+          <input id="sqm" name="sqm" type="number" required className={field} defaultValue={d('sqm')} />
           {issueFor('sqm') && <p className="mt-1 text-xs text-crit">{issueFor('sqm')}</p>}
         </Field>
         <Field name="balconySqm" label="מרפסת (מ״ר)">
-          <input id="balconySqm" name="balconySqm" type="number" className={field} defaultValue="0" />
+          <input id="balconySqm" name="balconySqm" type="number" className={field} defaultValue={d('balconySqm', '0')} />
         </Field>
         <Field name="lotSqm" label="מגרש (מ״ר)">
           <input id="lotSqm" name="lotSqm" type="number" className={field} />
         </Field>
         <Field name="floor" label="קומה">
-          <input id="floor" name="floor" type="number" className={field} defaultValue="0" />
+          <input id="floor" name="floor" type="number" className={field} defaultValue={d('floor', '0')} />
         </Field>
         <Field name="floorsInBuilding" label="מתוך קומות">
-          <input id="floorsInBuilding" name="floorsInBuilding" type="number" className={field} defaultValue="1" />
+          <input id="floorsInBuilding" name="floorsInBuilding" type="number" className={field} defaultValue={d('floorsInBuilding', '1')} />
         </Field>
         <Field name="builtYear" label="שנת בנייה">
-          <input id="builtYear" name="builtYear" type="number" required className={field} />
+          <input id="builtYear" name="builtYear" type="number" required className={field} defaultValue={d('builtYear')} />
         </Field>
         <Field name="condition" label="מצב">
-          <select id="condition" name="condition" className={field} defaultValue="kept">
+          <select id="condition" name="condition" className={field} defaultValue={d('condition', 'kept')}>
             <option value="new">חדש</option>
             <option value="renovated">משופץ</option>
             <option value="kept">שמור</option>
@@ -240,7 +297,7 @@ export function AddPropertyForm() {
           <input id="aspects" name="aspects" className={field} />
         </Field>
         <Field name="parking" label="חניות">
-          <input id="parking" name="parking" type="number" className={field} defaultValue="0" />
+          <input id="parking" name="parking" type="number" className={field} defaultValue={d('parking', '0')} />
         </Field>
         <Field name="ac" label="מיזוג">
           <input id="ac" name="ac" className={field} defaultValue="ללא" />
@@ -252,7 +309,13 @@ export function AddPropertyForm() {
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
           {CHECKBOXES.map(([name, label]) => (
             <label key={name} className="flex items-center gap-2 text-sm text-ink-2">
-              <input id={name} name={name} type="checkbox" className="h-4 w-4 accent-accent" />
+              <input
+                id={name}
+                name={name}
+                type="checkbox"
+                className="h-4 w-4 accent-accent"
+                defaultChecked={checks[name] ?? false}
+              />
               {label}
             </label>
           ))}
@@ -322,10 +385,10 @@ export function AddPropertyForm() {
           <input id="expectedMonthlyRent" name="expectedMonthlyRent" type="number" className={field} defaultValue="0" />
         </Field>
         <Field name="arnona" label="ארנונה לחודש (₪)">
-          <input id="arnona" name="arnona" type="number" className={field} defaultValue="0" />
+          <input id="arnona" name="arnona" type="number" className={field} defaultValue={d('arnona', '0')} />
         </Field>
         <Field name="vaad" label="ועד בית (₪)">
-          <input id="vaad" name="vaad" type="number" className={field} defaultValue="0" />
+          <input id="vaad" name="vaad" type="number" className={field} defaultValue={d('vaad', '0')} />
         </Field>
         <Field name="utilities" label="חשמל ומים (₪)">
           <input id="utilities" name="utilities" type="number" className={field} defaultValue="0" />
@@ -341,6 +404,8 @@ export function AddPropertyForm() {
           </>
         )}
       </Section>
+
+      </div>
 
       {status.kind !== 'idle' && (
         <p
