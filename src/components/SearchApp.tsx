@@ -6,7 +6,7 @@ import { PropertyCard } from './PropertyCard';
 import { SaveSearchButton } from './SaveSearchButton';
 import { MAX_COMPARE } from '@/lib/compare';
 import { ASSET_TYPE_LABEL, FEATURE_LABEL, parseQuery, type FeatureKey, type SearchQuery } from '@/lib/query';
-import { evaluate, search, type SortKey } from '@/lib/search';
+import { diagnoseEmpty, evaluate, search, type Blocker, type SortKey } from '@/lib/search';
 import type { AssetType, BuyerProfile, Deal, Property } from '@/types/property';
 
 const PROFILE_OPTIONS: Array<[BuyerProfile, string]> = [
@@ -106,6 +106,36 @@ export function SearchApp({ properties, cities }: { properties: Property[]; citi
   );
 
   const criticalCount = results.filter((r) => r.flags.some((f) => f.level === 'crit')).length;
+
+  // Only computed when there is nothing to show, so the common path stays cheap.
+  const diagnosis = useMemo(
+    () =>
+      results.length === 0
+        ? diagnoseEmpty(properties, toQuery(filters), profile, {
+            city: (v) => v,
+            assetType: (v) => ASSET_TYPE_LABEL[v as AssetType] ?? v,
+            feature: (v) => FEATURE_LABEL[v as FeatureKey] ?? v,
+          })
+        : null,
+    [results.length, properties, filters, profile],
+  );
+
+  const relax = (key: Blocker['key']) => {
+    const map: Partial<Record<Blocker['key'], keyof Filters>> = {
+      city: 'city',
+      assetType: 'assetType',
+      roomsMin: 'roomsMin',
+      priceMin: 'priceMin',
+      priceMax: 'priceMax',
+      sqmMin: 'sqmMin',
+      yieldMin: 'yieldMin',
+    };
+    if (key === 'features') set('features', []);
+    else {
+      const field = map[key];
+      if (field) set(field, '' as never);
+    }
+  };
 
   // Selection is held by id and resolved against the full inventory, so a property
   // stays in the comparison after a filter change stops it matching the search.
@@ -367,11 +397,42 @@ export function SearchApp({ properties, cities }: { properties: Property[]; citi
         )}
 
         {results.length === 0 ? (
-          <p className="py-10 text-center text-[15px] text-muted">
-            אין נכסים שעונים על כל הקריטריונים.
-            <br />
-            נסו להסיר מאפיין נדרש, להעלות את תקרת המחיר, או לבחור עיר אחרת.
-          </p>
+          <div className="mt-4 rounded-xl border border-dashed border-line bg-surface-2 p-6 text-center">
+            <p className="font-display text-lg font-bold">אין נכס שעונה על כל התנאים</p>
+            <p className="mt-1 text-sm text-muted">
+              במאגר {diagnosis?.total ?? 0} נכסי דוגמה, מתוכם {diagnosis?.sameDeal ?? 0}{' '}
+              {filters.deal === 'sale' ? 'למכירה' : 'להשכרה'}. זהו מלאי הדגמה קטן, כך שחיפוש ריאלי יחזיר
+              כאן אפס לעיתים קרובות.
+            </p>
+
+            {diagnosis && diagnosis.blockers.length > 0 ? (
+              <>
+                <p className="mt-4 text-[13px] font-semibold text-ink-2">
+                  מספיק להסיר תנאי אחד כדי לקבל תוצאות:
+                </p>
+                <div className="mt-2 flex flex-wrap justify-center gap-2">
+                  {diagnosis.blockers.map((b) => (
+                    <button
+                      key={String(b.key)}
+                      type="button"
+                      onClick={() => relax(b.key)}
+                      className="rounded-full border border-accent bg-surface px-3 py-1.5 text-xs font-semibold text-accent-ink hover:bg-accent-soft"
+                    >
+                      הסרת „{b.label}” ← {b.wouldMatch} תוצאות
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="mt-4 text-[13px] text-ink-2">
+                אף תנאי בודד לא פותר את זה — התנאים חוסמים יחד. נסו „נקה” ולהתחיל מחדש.
+              </p>
+            )}
+
+            <p className="mt-4 text-[11px] text-muted">
+              ערים שיש עליהן נכסים: {cities.join(' · ')}
+            </p>
+          </div>
         ) : (
           <div className="mt-4 grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
             {results.map((r) => (

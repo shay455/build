@@ -70,3 +70,59 @@ export function search(
   }
   return results.sort(COMPARATORS[sort] ?? COMPARATORS.match);
 }
+
+/** A filter that, on its own, is what keeps the result set empty. */
+export interface Blocker {
+  key: keyof SearchQuery;
+  /** What to tell the user, phrased as the constraint they set. */
+  label: string;
+  /** How many properties would match if this one constraint were dropped. */
+  wouldMatch: number;
+}
+
+export interface EmptyDiagnosis {
+  /** Everything in the index, both deal types. */
+  total: number;
+  /** How many are of the requested deal type at all. */
+  sameDeal: number;
+  /** Constraints that would each, alone, unblock the search. Most permissive first. */
+  blockers: Blocker[];
+}
+
+/**
+ * Explain an empty result set.
+ *
+ * "No properties match" is true and useless. Removing one constraint at a time
+ * shows which one is actually doing the excluding, which is the thing the user
+ * can act on — and with a small index, usually it is the price ceiling.
+ */
+export function diagnoseEmpty(
+  properties: readonly Property[],
+  q: SearchQuery,
+  profile: BuyerProfile,
+  labels: { city: (v: string) => string; assetType: (v: string) => string; feature: (v: string) => string },
+): EmptyDiagnosis {
+  const sameDeal = properties.filter((p) => !q.deal || p.deal === q.deal).length;
+
+  const describe: Partial<Record<keyof SearchQuery, () => string>> = {
+    city: () => `עיר: ${labels.city(q.city!)}`,
+    assetType: () => `סוג נכס: ${labels.assetType(q.assetType!)}`,
+    roomsMin: () => `${q.roomsMin}+ חדרים`,
+    priceMin: () => `מחיר מ־${q.priceMin!.toLocaleString('he-IL')}`,
+    priceMax: () => `מחיר עד ${q.priceMax!.toLocaleString('he-IL')}`,
+    sqmMin: () => `שטח מ־${q.sqmMin} מ״ר`,
+    yieldMin: () => `תשואה מעל ${(q.yieldMin! * 100).toFixed(1)}%`,
+    features: () => (q.features ?? []).map(labels.feature).join(', '),
+  };
+
+  const blockers: Blocker[] = [];
+  for (const key of Object.keys(describe) as Array<keyof SearchQuery>) {
+    if (q[key] === undefined || (key === 'features' && (q.features ?? []).length === 0)) continue;
+    const relaxed: SearchQuery = { ...q, [key]: undefined };
+    const wouldMatch = search(properties, relaxed, profile).length;
+    if (wouldMatch > 0) blockers.push({ key, label: describe[key]!(), wouldMatch });
+  }
+
+  blockers.sort((a, b) => b.wouldMatch - a.wouldMatch);
+  return { total: properties.length, sameDeal, blockers };
+}

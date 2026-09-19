@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { search } from '@/lib/search';
+import { diagnoseEmpty, search } from '@/lib/search';
 import { flagsFor } from '@/lib/flags';
 import { economics } from '@/lib/finance';
 import { makeProperty } from './factory';
@@ -84,5 +84,38 @@ describe('flags', () => {
     const text = (p: Property) => flagsFor(p, economics(p, 'single')).map((f) => f.text).join(' ');
     expect(text(unverified)).toContain('לא אומת');
     expect(text(verified)).not.toContain('לא אומת');
+  });
+});
+
+describe('diagnoseEmpty', () => {
+  const labels = { city: (v: string) => v, assetType: (v: string) => v, feature: (v: string) => v };
+
+  it('names the one constraint that is doing the excluding', () => {
+    const d = diagnoseEmpty(inventory, { deal: 'sale', city: 'חיפה', priceMax: 100 }, 'single', labels);
+    expect(d.blockers.map((b) => b.key)).toContain('priceMax');
+    expect(d.blockers.find((b) => b.key === 'priceMax')!.wouldMatch).toBeGreaterThan(0);
+  });
+
+  it('orders the suggestions by how many results each would unlock', () => {
+    const d = diagnoseEmpty(inventory, { deal: 'sale', city: 'אילת', roomsMin: 99 }, 'single', labels);
+    const counts = d.blockers.map((b) => b.wouldMatch);
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+  });
+
+  it('suggests nothing when no single relaxation helps', () => {
+    const d = diagnoseEmpty(inventory, { deal: 'sale', city: 'אילת', roomsMin: 99 }, 'single', labels);
+    // Both constraints exclude everything on their own, so neither alone unblocks.
+    expect(d.blockers).toEqual([]);
+  });
+
+  it('reports the inventory size and how much of it is the right deal type', () => {
+    const d = diagnoseEmpty(inventory, { deal: 'rent' }, 'single', labels);
+    expect(d.total).toBe(inventory.length);
+    expect(d.sameDeal).toBe(0);
+  });
+
+  it('treats a features list as one relaxable constraint', () => {
+    const d = diagnoseEmpty(inventory, { deal: 'sale', features: ['storage', 'furnished'] }, 'single', labels);
+    expect(d.blockers.map((b) => b.key)).toContain('features');
   });
 });
